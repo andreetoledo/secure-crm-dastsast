@@ -24,6 +24,13 @@
     "onlyBuiltDependencies": [
       "better-sqlite3",
       "esbuild"
-    ]
+    ],
+    "overrides": {
+      "lodash": "^4.17.21",
+      "jsonwebtoken": "^9.0.2",
+      "qs": ">=6.13.0",
+      "proxy-addr": ">=2.0.7",
+      "next": "14.2.24"
+    }
   }
 }
