@@ -17,7 +17,7 @@ export function authenticate(req: AuthedRequest, res: Response, next: NextFuncti
   }
 
   try {
-    const payload = jwt.verify(token, JWT_SECRET) as any;
+    const payload = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] }) as any;
     req.user = { sub: payload.sub, username: payload.username, role: payload.role };
     next();
   } catch (err) {

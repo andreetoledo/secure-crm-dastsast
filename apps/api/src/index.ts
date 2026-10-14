@@ -12,6 +12,9 @@ initSchema();
 const app = express();
 const PORT = Number(process.env.API_PORT || 4000);
 
+// Confianza controlada en proxy inverso (mitiga spoofing en proxy-addr / P-5 #13)
+app.set('trust proxy', 1);
+
 // Deshabilitar explicitamente x-powered-by (mitiga S5689 / fingerprinting)
 app.disable('x-powered-by');
 
@@ -22,6 +25,8 @@ app.use((_req, res, next) => {
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('Content-Security-Policy', "default-src 'self'; frame-ancestors 'none';");
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+  res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
   next();
 });
 

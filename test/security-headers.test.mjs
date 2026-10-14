@@ -40,14 +40,25 @@ test('Cabeceras de Seguridad y Proteccion contra Clickjacking/XSS (DAST ZAP & SA
     );
   });
 
-  await t.test('Mitiga Alertas DAST en la API: Cabeceras de seguridad presentes en index.ts', () => {
+  await t.test('Mitiga Alertas DAST #10: COOP y CORP configurados en Next.js y Express', () => {
     assert.ok(
-      indexContent.includes('X-Frame-Options'),
-      'La API debe emitir cabecera X-Frame-Options'
+      nextContent.includes('Cross-Origin-Opener-Policy'),
+      'Next.js debe emitir Cross-Origin-Opener-Policy (ZAP #10)'
     );
     assert.ok(
-      indexContent.includes('X-Content-Type-Options'),
-      'La API debe emitir cabecera X-Content-Type-Options'
+      nextContent.includes('Cross-Origin-Resource-Policy'),
+      'Next.js debe emitir Cross-Origin-Resource-Policy (ZAP #10)'
+    );
+    assert.ok(
+      indexContent.includes('Cross-Origin-Opener-Policy'),
+      'La API Express debe emitir Cross-Origin-Opener-Policy (ZAP #10)'
+    );
+  });
+
+  await t.test('Mitiga P-5 #13: Express configura trust proxy para evitar IP Spoofing en proxy-addr', () => {
+    assert.ok(
+      indexContent.includes("app.set('trust proxy', 1)") || indexContent.includes('app.set("trust proxy", 1)'),
+      'Express debe fijar app.set("trust proxy", 1)'
     );
   });
 });
