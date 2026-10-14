@@ -22,5 +22,9 @@ COPY packages/shared packages/shared
 COPY apps/web apps/web
 RUN pnpm --filter @secure-crm/shared build && pnpm --filter @secure-crm/web build
 
+# Mitigacion docker:S6471: Asignar propiedad a usuario no privilegiado node
+RUN chown -R node:node /app
+USER node
+
 EXPOSE 3000
 CMD ["pnpm", "--filter", "@secure-crm/web", "start"]

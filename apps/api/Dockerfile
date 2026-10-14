@@ -17,6 +17,10 @@ COPY packages/shared packages/shared
 COPY apps/api apps/api
 RUN pnpm --filter @secure-crm/shared build && pnpm --filter @secure-crm/api build
 
+# Mitigacion docker:S6471: Asignar propiedad a usuario no privilegiado node
+RUN chown -R node:node /app
+USER node
+
 EXPOSE 4000
 # Al arrancar: si no existe la BD, la crea y puebla; luego inicia el servidor.
 CMD ["sh", "-c", "node apps/api/dist/seed.js && node apps/api/dist/index.js"]
