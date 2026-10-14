@@ -44,7 +44,7 @@ authRouter.post('/login', (req, res) => {
   const token = jwt.sign({ sub: user.id, username: user.username, role: user.role }, JWT_SECRET);
 
   // Cookie de sesión insegura: sin HttpOnly, sin Secure, sin SameSite (A02 / CWE-1004).
-  res.cookie('session', token, { httpOnly: false, secure: false });
+  res.cookie('session', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax' });
 
   res.json({ token, user });
 });

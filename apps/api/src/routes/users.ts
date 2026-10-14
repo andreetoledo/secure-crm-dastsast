@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import { db } from '../db';
 import { hashPassword } from '../hash';
-import { authenticate, AuthedRequest } from '../middleware/auth';
+import { authenticate, requireRole, AuthedRequest } from '../middleware/auth';
 
 export const usersRouter = Router();
 usersRouter.use(authenticate);
+usersRouter.use(requireRole('admin'));
 
 // GET /api/users
 // Broken Access Control: NO se valida que el usuario sea admin (A01 / CWE-862).

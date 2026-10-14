@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { db } from '../db';
-import { authenticate, AuthedRequest } from '../middleware/auth';
+import { authenticate, requireRole, AuthedRequest } from '../middleware/auth';
 
 export const ticketsRouter = Router();
 ticketsRouter.use(authenticate);
@@ -85,7 +85,7 @@ ticketsRouter.post('/', (req: AuthedRequest, res) => {
 // PUT /api/tickets/:id
 // Sin verificación de propiedad ni rol (A01 / IDOR): un 'viewer' puede editar
 // cualquier ticket de cualquier agente.
-ticketsRouter.put('/:id', (req, res) => {
+ticketsRouter.put('/:id', requireRole('admin', 'agent'), (req, res) => {
   const existing = db.prepare('SELECT * FROM tickets WHERE id = ?').get(req.params.id) as any;
   if (!existing) return res.status(404).json({ error: 'Ticket no encontrado' });
   const b = req.body ?? {};
@@ -110,7 +110,7 @@ ticketsRouter.put('/:id', (req, res) => {
 });
 
 // DELETE /api/tickets/:id  (sin verificación de rol -> A01)
-ticketsRouter.delete('/:id', (req, res) => {
+ticketsRouter.delete('/:id', requireRole('admin'), (req, res) => {
   const info = db.prepare('DELETE FROM tickets WHERE id = ?').run(req.params.id);
   if (info.changes === 0) return res.status(404).json({ error: 'Ticket no encontrado' });
   res.json({ ok: true });
