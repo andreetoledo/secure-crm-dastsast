@@ -13,7 +13,7 @@
     "docker:up": "docker compose up --build",
     "docker:down": "docker compose down -v",
     "test": "node --test test/*.test.mjs",
-    "test:coverage": "node --test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=coverage/lcov.info test/*.test.mjs"
+    "test:coverage": "node --test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=coverage/lcov.info test/*.test.mjs && node scripts/normalize-lcov.mjs"
   },
   "devDependencies": {
     "concurrently": "^9.1.0"
