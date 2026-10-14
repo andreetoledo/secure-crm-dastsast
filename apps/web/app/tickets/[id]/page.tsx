@@ -111,7 +111,7 @@ export default function TicketDetail() {
             </div>
             <div className="mt-2 flex gap-2">
               <Button onClick={save} disabled={saving} className="flex-1">
-                {saved ? 'Guardado' : saving ? 'Guardando…' : 'Guardar cambios'}
+                {(function() { if (saved) return 'Guardado'; if (saving) return 'Guardando…'; return 'Guardar cambios'; })()}
               </Button>
               <Button variant="danger" onClick={remove}>Eliminar</Button>
             </div>

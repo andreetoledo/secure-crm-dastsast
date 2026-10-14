@@ -38,7 +38,8 @@ function TicketsInner() {
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
-    router.replace(`/tickets${q ? `?q=${encodeURIComponent(q)}` : ''}`);
+    const queryParam = q ? `?q=${encodeURIComponent(q)}` : '';
+    router.replace(`/tickets${queryParam}`);
     load(q);
   }
 
