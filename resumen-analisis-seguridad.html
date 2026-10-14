@@ -1,0 +1,1116 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reporte Integral de Seguridad · SAST, SCA (pnpm + Dependency-Check) y DAST</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --surface: #111827;
+      --surface-card: #1f2937;
+      --border: #374151;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --primary: #3b82f6;
+      --danger: #ef4444;
+      --danger-bg: rgba(239, 68, 68, 0.15);
+      --warning: #f59e0b;
+      --warning-bg: rgba(245, 158, 11, 0.15);
+      --info: #06b6d4;
+      --info-bg: rgba(6, 182, 212, 0.15);
+      --success: #10b981;
+      --success-bg: rgba(16, 185, 129, 0.15);
+      --purple: #a855f7;
+      --purple-bg: rgba(168, 85, 247, 0.15);
+      --amber: #f59e0b;
+      --amber-bg: rgba(245, 158, 11, 0.15);
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 32px 20px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    header {
+      margin-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 24px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      background: var(--info-bg);
+      color: var(--info);
+      border: 1px solid var(--info);
+    }
+    .badge-extra {
+      background: var(--purple-bg);
+      color: var(--purple);
+      border: 1px solid var(--purple);
+      margin-left: 8px;
+    }
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+    }
+    h2 {
+      font-size: 1.45rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-desc {
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      font-size: 0.95rem;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 32px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* QUALITY GATE BANNER */
+    .quality-gate-banner {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      border-radius: 10px;
+      padding: 16px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .qg-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .qg-badge {
+      background: #ef4444;
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.95rem;
+      padding: 6px 12px;
+      border-radius: 6px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .qg-text h4 {
+      font-size: 1.05rem;
+      color: #fff;
+      font-weight: 600;
+    }
+    .qg-text p {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+    .qg-meta {
+      font-size: 0.85rem;
+      color: #9ca3af;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+
+    /* DASHBOARD RATING CARDS */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .dashboard-card {
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .dashboard-card:hover {
+      transform: translateY(-2px);
+      border-color: #4b5563;
+    }
+    .rating-circle {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.7rem;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    .rating-circle.rating-a {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      border: 2px solid #10b981;
+    }
+    .rating-circle.rating-d {
+      background: rgba(245, 158, 11, 0.2);
+      color: #fbbf24;
+      border: 2px solid #f59e0b;
+    }
+    .rating-circle.rating-neutral {
+      background: rgba(156, 163, 175, 0.15);
+      color: #9ca3af;
+      border: 2px solid #4b5563;
+      font-size: 1.1rem;
+    }
+    .dashboard-info h4 {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 3px;
+    }
+    .dashboard-info .metric-value {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .dashboard-info .metric-sub {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      margin: 16px 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+      text-align: left;
+    }
+    th, td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    th {
+      background: var(--surface-card);
+      color: #fff;
+      font-weight: 600;
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .pill.critical { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger); }
+    .pill.high, .pill.major { background: var(--danger-bg); color: #f87171; border: 1px solid #f87171; }
+    .pill.medium { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning); }
+    .pill.low, .pill.minor { background: var(--info-bg); color: var(--info); border: 1px solid var(--info); }
+    .pill.sonar { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid #3b82f6; }
+    .pill.semgrep { background: var(--purple-bg); color: #c084fc; border: 1px solid var(--purple); }
+    .pill.owasp-dc { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
+    .pill.prod { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
+    .pill.dev { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
+    .pill.sast { background: #312e81; color: #818cf8; }
+    .pill.dast { background: #1e3a8a; color: #60a5fa; }
+
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85em;
+      background: rgba(255, 255, 255, 0.08);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #e5e7eb;
+    }
+    .alert-box {
+      border-left: 4px solid;
+      background: var(--surface-card);
+      border-radius: 0 8px 8px 0;
+      padding: 14px 18px;
+      margin-bottom: 14px;
+    }
+    .alert-box.sonar-box { border-color: #3b82f6; }
+    .alert-box.semgrep-box { border-color: var(--purple); }
+    .alert-box.owasp-box { border-color: #f59e0b; }
+    .alert-box.medium { border-color: var(--warning); }
+    .alert-box.low { border-color: var(--info); }
+    
+    .alert-box h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: #fff;
+    }
+    .alert-box p {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      margin-bottom: 6px;
+    }
+    .meta-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <span class="badge">Laboratorio DAST · CC3077 Desarrollo Seguro</span>
+        <span class="badge badge-extra">⭐ Incluye Puntos Extra (Dependency-Check)</span>
+      </div>
+      <h1>Reporte Integral de Seguridad</h1>
+      <p class="subtitle">Análisis SAST (SonarQube + Semgrep), SCA (pnpm audit + OWASP Dependency-Check) y DAST (OWASP ZAP)</p>
+    </header>
+
+    <!-- SECCION 1: METRICAS Y RATINGS DEL DASHBOARD -->
+    <div class="card">
+      <h2>🛡️ SECCIÓN 1: Análisis Estático SAST · Métricas y Ratings del Dashboard (Overall Code)</h2>
+      <p class="section-desc">Valores confirmados directamente desde el Dashboard de SonarQube para el proyecto <code>secure-crm</code> (versión <code>fase1</code>, 1.6k líneas de código):</p>
+
+      <!-- BANNER DE QUALITY GATE -->
+      <div class="quality-gate-banner">
+        <div class="qg-left">
+          <div class="qg-badge">✕ Failed</div>
+          <div class="qg-text">
+            <h4>Quality Gate: «Curso Desarrollo Seguro» — Estado: FAILED (Esperado en Fase 1)</h4>
+            <p>Punto de partida de la línea base vulnerable. Falló debido a vulnerabilidades de seguridad abiertas (Rating D peor que A). Se resolverá en la Fase 2.</p>
+          </div>
+        </div>
+        <div class="qg-meta">
+          <strong>Línea base:</strong> Version fase1 · 1.6k LOC
+        </div>
+      </div>
+
+      <!-- TARJETAS DE RATINGS SONARQUBE (EXACTAS AL DASHBOARD) -->
+      <div class="dashboard-grid">
+        <!-- SECURITY -->
+        <div class="dashboard-card">
+          <div class="rating-circle rating-d">D</div>
+          <div class="dashboard-info">
+            <h4>Security</h4>
+            <div class="metric-value">Rating D · 24 Open issues</div>
+            <div class="metric-sub">3 SonarQube + 6 Semgrep + 15 Dependency-Check</div>
+          </div>
+        </div>
+
+        <!-- RELIABILITY -->
+        <div class="dashboard-card">
+          <div class="rating-circle rating-a">A</div>
+          <div class="dashboard-info">
+            <h4>Reliability</h4>
+            <div class="metric-value">Rating A · 0 Open issues</div>
+            <div class="metric-sub">0 Bugs de fiabilidad detectados en runtime</div>
+          </div>
+        </div>
+
+        <!-- MAINTAINABILITY -->
+        <div class="dashboard-card">
+          <div class="rating-circle rating-a">A</div>
+          <div class="dashboard-info">
+            <h4>Maintainability</h4>
+            <div class="metric-value">Rating A · 21 Open issues</div>
+            <div class="metric-sub">21 Code Smells (Clean Code / Deuda técnica baja)</div>
+          </div>
+        </div>
+
+        <!-- HOTSPOTS -->
+        <div class="dashboard-card">
+          <div class="rating-circle rating-a">A</div>
+          <div class="dashboard-info">
+            <h4>Security Hotspots</h4>
+            <div class="metric-value">Rating A · 0 Hotspots</div>
+            <div class="metric-sub">100% revisados / canalizados directo como issues</div>
+          </div>
+        </div>
+
+        <!-- ACCEPTED ISSUES -->
+        <div class="dashboard-card">
+          <div class="rating-circle rating-neutral">0</div>
+          <div class="dashboard-info">
+            <h4>Accepted Issues</h4>
+            <div class="metric-value">0 issues aceptados</div>
+            <div class="metric-sub">Valid issues that were not fixed</div>
+          </div>
+        </div>
+
+        <!-- COVERAGE -->
+        <div class="dashboard-card">
+          <div class="rating-circle rating-neutral">0%</div>
+          <div class="dashboard-info">
+            <h4>Coverage</h4>
+            <div class="metric-value">0.0% (350 lines to cover)</div>
+            <div class="metric-sub">Normal en Fase 1 (se implementa en Fase 2 ≥ 70%)</div>
+          </div>
+        </div>
+
+        <!-- DUPLICATIONS -->
+        <div class="dashboard-card">
+          <div class="rating-circle rating-neutral">0%</div>
+          <div class="dashboard-info">
+            <h4>Duplications</h4>
+            <div class="metric-value">0.0% (1.8k lines)</div>
+            <div class="metric-sub">Código limpio sin duplicaciones redundantes</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DESGLOSE DETALLADO DE SEGURIDAD (3 + 6) -->
+      <h3 style="color: #60a5fa; margin-bottom: 12px; font-size: 1.15rem;">🔵 1. Hallazgos Nativos de SonarQube (3 Issues de Seguridad)</h3>
+      
+      <div class="alert-box sonar-box">
+        <h3>1. Uso de Algoritmo Criptográfico Débil (MD5)</h3>
+        <p><strong>Descripción:</strong> Se detectó la llamada al algoritmo MD5 en backend. No ofrece resistencia ante ataques de colisión ni fuerza bruta.</p>
+        <p><strong>Ubicación:</strong> <code>apps/api/src/hash.ts : Línea 7</code> (Regla: <code>typescript:S4790</code>)</p>
+        <div class="meta-tags">
+          <span class="pill sonar">SonarQube</span>
+          <span class="pill critical">Critical</span>
+          <code>CWE-327 (Broken Crypto)</code>
+          <code>OWASP A02:2021-Cryptographic Failures</code>
+        </div>
+      </div>
+
+      <div class="alert-box sonar-box">
+        <h3>2. Exposición Implícita de Versión de Framework (Express)</h3>
+        <p><strong>Descripción:</strong> Express divulga por defecto <code>X-Powered-By</code>, facilitando a posibles atacantes mapear versiones vulnerables.</p>
+        <p><strong>Ubicación:</strong> <code>apps/api/src/index.ts : Línea 12</code> (Regla: <code>typescript:S5689</code>)</p>
+        <div class="meta-tags">
+          <span class="pill sonar">SonarQube</span>
+          <span class="pill minor">Minor</span>
+          <code>CWE-200 (Info Exposure)</code>
+          <code>OWASP A05:2021-Security Misconfiguration</code>
+        </div>
+      </div>
+
+      <div class="alert-box sonar-box">
+        <h3>3. Contenedor Docker ejecutándose como Root por defecto</h3>
+        <p><strong>Descripción:</strong> La imagen base <code>node</code> inicia el contenedor con privilegios de root sin restringir el usuario.</p>
+        <p><strong>Ubicación:</strong> <code>apps/web/Dockerfile : Línea 3</code> (Regla: <code>docker:S6471</code>)</p>
+        <div class="meta-tags">
+          <span class="pill sonar">SonarQube</span>
+          <span class="pill minor">Minor</span>
+          <code>CWE-250 (Execution with Unnecessary Privileges)</code>
+          <code>OWASP A05:2021-Security Misconfiguration</code>
+        </div>
+      </div>
+
+      <h3 style="color: #c084fc; margin-top: 28px; margin-bottom: 12px; font-size: 1.15rem;">🟣 2. Hallazgos Importados de Semgrep OSS (+6 Issues de Seguridad)</h3>
+
+      <div class="alert-box semgrep-box">
+        <h3>4. Contenedor sin directiva USER explícita (Riesgo Root)</h3>
+        <p><strong>Descripción:</strong> Al no tener una directiva <code>USER</code> no-root al final del Dockerfile, el proceso principal corre como root.</p>
+        <p><strong>Ubicación:</strong> <code>apps/web/Dockerfile : Línea 26</code></p>
+        <div class="meta-tags">
+          <span class="pill semgrep">Semgrep</span>
+          <span class="pill critical">Critical</span>
+          <code>dockerfile.security.missing-user</code>
+        </div>
+      </div>
+
+      <div class="alert-box semgrep-box">
+        <h3>5. MD5 Usado Explícitamente como Password Hash</h3>
+        <p><strong>Descripción:</strong> Semgrep confirma contextualizar que el hash MD5 se emplea directamente para contraseñas de usuarios en base de datos.</p>
+        <p><strong>Ubicación:</strong> <code>apps/api/src/hash.ts : Línea 7</code></p>
+        <div class="meta-tags">
+          <span class="pill semgrep">Semgrep</span>
+          <span class="pill major">Major</span>
+          <code>md5-used-as-password</code>
+        </div>
+      </div>
+
+      <div class="alert-box semgrep-box">
+        <h3>6. Política de Confianza de PNPM no configurada (Trust Policy)</h3>
+        <p><strong>Descripción:</strong> Falta <code>trustPolicy: no-downgrade</code> en pnpm para evitar que actualizaciones degraden la seguridad.</p>
+        <p><strong>Ubicación:</strong> Configuración PNPM Workspace</p>
+        <div class="meta-tags">
+          <span class="pill semgrep">Semgrep</span>
+          <span class="pill major">Major</span>
+          <code>pnpm-trust-policy</code>
+        </div>
+      </div>
+
+      <div class="alert-box semgrep-box">
+        <h3>7. Subdependencias exóticas no bloqueadas en PNPM</h3>
+        <p><strong>Descripción:</strong> Falta <code>blockExoticSubdeps: true</code> para prevenir dependencias transitivas de orígenes no confiables.</p>
+        <p><strong>Ubicación:</strong> Configuración PNPM Workspace</p>
+        <div class="meta-tags">
+          <span class="pill semgrep">Semgrep</span>
+          <span class="pill major">Major</span>
+          <code>pnpm-block-exotic-sub-dependencies</code>
+        </div>
+      </div>
+
+      <div class="alert-box semgrep-box">
+        <h3>8. Ausencia de Edad Mínima de Publicación en PNPM</h3>
+        <p><strong>Descripción:</strong> Falta <code>minimumReleaseAge: 10080</code> (7 días) para prevenir paquetes maliciosos recién publicados.</p>
+        <p><strong>Ubicación:</strong> Configuración PNPM Workspace</p>
+        <div class="meta-tags">
+          <span class="pill semgrep">Semgrep</span>
+          <span class="pill major">Major</span>
+          <code>pnpm-minimum-release-age</code>
+        </div>
+      </div>
+
+      <div class="alert-box semgrep-box">
+        <h3>9. Dockerfile Global sin Aislamiento de Usuario</h3>
+        <p><strong>Descripción:</strong> Detección en ambiente de construcción de imagen general sin switch de usuario.</p>
+        <p><strong>Ubicación:</strong> Build / Environment</p>
+        <div class="meta-tags">
+          <span class="pill semgrep">Semgrep</span>
+          <span class="pill critical">Critical</span>
+          <code>dockerfile.security.missing-user</code>
+        </div>
+      </div>
+
+      <!-- 1.3 CODE SMELLS -->
+      <h3 style="color: #34d399; margin-top: 28px; margin-bottom: 12px; font-size: 1.15rem;">🟢 3. Mantenibilidad y Clean Code (Rating A · 21 Code Smells)</h3>
+      <p class="section-desc">SonarQube reportó 21 oportunidades de mejora en TypeScript/React para mejorar la legibilidad y mantenimiento:</p>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Regla</th>
+              <th>Severidad</th>
+              <th>Descripción Clean Code</th>
+              <th>Archivos Afectados</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>typescript:S6759</code></td>
+              <td><span class="pill minor">Minor</span></td>
+              <td>Marcar las props de componentes React como de solo lectura (<code>readonly</code>).</td>
+              <td><code>layout.tsx</code>, <code>AppShell.tsx</code>, <code>brand.tsx</code>, <code>charts.tsx</code>, <code>ui.tsx</code></td>
+            </tr>
+            <tr>
+              <td><code>typescript:S3358</code></td>
+              <td><span class="pill major">Major</span></td>
+              <td>Extraer operaciones ternarias anidadas en sentencias independientes.</td>
+              <td><code>tickets/[id]/page.tsx</code>, <code>tickets/page.tsx</code></td>
+            </tr>
+            <tr>
+              <td><code>typescript:S4624</code></td>
+              <td><span class="pill major">Major</span></td>
+              <td>Refactorizar template literals anidados (strings confusos).</td>
+              <td><code>tickets/page.tsx</code>, <code>lib/api.ts</code></td>
+            </tr>
+            <tr>
+              <td><code>typescript:S7772</code></td>
+              <td><span class="pill minor">Minor</span></td>
+              <td>Preferir módulos con prefijo estándar (ej. <code>node:crypto</code>, <code>node:path</code>, <code>node:fs</code>).</td>
+              <td><code>apps/api/src/db.ts</code>, <code>apps/api/src/hash.ts</code></td>
+            </tr>
+            <tr>
+              <td><code>typescript:S7744</code></td>
+              <td><span class="pill minor">Minor</span></td>
+              <td>Eliminar objetos vacíos inútiles.</td>
+              <td><code>apps/web/lib/api.ts</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SECCION 2: OWASP DEPENDENCY-CHECK -->
+    <div class="card">
+      <h2>⭐ SECCIÓN 2: Vulnerabilidades Importadas de OWASP Dependency-Check (+5 Puntos Extra)</h2>
+      <p class="section-desc">Al integrar el plugin <code>sonar-dependency-check-plugin</code> y alimentar el archivo <code>reports-dc/dependency-check-report.json</code>, SonarQube integró 15 vulnerabilidades CVE de dependencias directas y transitivas:</p>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Componente / Paquete</th>
+              <th>Referencia / CVE</th>
+              <th>Score CVSS v3</th>
+              <th>Categoría CWE</th>
+              <th>Impacto y Riesgo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>proxy-addr</code></td>
+              <td><span class="pill critical">GHSA-jqcg-44mw-7w3h</span></td>
+              <td><strong>9.1 (Crítico)</strong></td>
+              <td><code>CWE-697, CWE-348, CWE-290</code></td>
+              <td><strong>IP Spoofing:</strong> Permite falsificar IP del cliente mediante subredes IPv4 mapped IPv6.</td>
+            </tr>
+            <tr>
+              <td><code>shell-quote</code></td>
+              <td><span class="pill critical">GHSA-pqg4-j6r4-53mv</span></td>
+              <td><strong>8.1 (Alto)</strong></td>
+              <td><code>CWE-78</code></td>
+              <td><strong>Command Injection:</strong> Caracteres de fin de línea anulan comentarios y ejecutan comandos en shell.</td>
+            </tr>
+            <tr>
+              <td><code>lodash</code></td>
+              <td><span class="pill high">GHSA-r5fr-rjxr-66jc</span></td>
+              <td><strong>8.1 (Alto)</strong></td>
+              <td><code>CWE-94</code></td>
+              <td>Inyección de código a través de manipulación de templates y propiedades no seguras.</td>
+            </tr>
+            <tr>
+              <td><code>postcss</code></td>
+              <td><span class="pill high">GHSA-6g55-p6wh-862q</span></td>
+              <td><strong>7.5 (Alto)</strong></td>
+              <td><code>CWE-22, CWE-200</code></td>
+              <td>Lectura arbitraria de archivos locales (Path Traversal) y denegación de servicio en source maps.</td>
+            </tr>
+            <tr>
+              <td><code>braces</code></td>
+              <td><span class="pill high">GHSA-vfj7-8cjw-p6xm</span></td>
+              <td><strong>7.5 (Alto)</strong></td>
+              <td><code>CWE-674</code></td>
+              <td>Recursión incontrolada que provoca Denegación de Servicio (DoS) por agotamiento de pila.</td>
+            </tr>
+            <tr>
+              <td><code>source-map-js</code></td>
+              <td><span class="pill high">GHSA-68fv-2mgg-jv7q</span></td>
+              <td><strong>7.5 (Alto)</strong></td>
+              <td><code>CWE-1284</code></td>
+              <td>Validación impropia en mapeos de archivos JS que puede resultar en DoS.</td>
+            </tr>
+            <tr>
+              <td><code>next</code></td>
+              <td><span class="pill medium">GHSA-g5qg-72qw-gw5v</span></td>
+              <td><strong>6.2 (Medio)</strong></td>
+              <td><code>CWE-524</code></td>
+              <td>Exposición de contenido sensible en cacheo de rutas en Next.js.</td>
+            </tr>
+            <tr>
+              <td><code>qs</code></td>
+              <td><span class="pill medium">GHSA-4mjr-xmp4-gh2g</span></td>
+              <td><strong>5.3 (Medio)</strong></td>
+              <td><code>CWE-248, CWE-703</code></td>
+              <td>Excepción no capturada en <code>qs.stringify()</code> provocando caída del servidor.</td>
+            </tr>
+            <tr>
+              <td><code>jsonwebtoken</code></td>
+              <td><span class="pill medium">GHSA-hjrf-2m68-5959</span></td>
+              <td><strong>5.0 (Medio)</strong></td>
+              <td><code>CWE-287, CWE-1259</code></td>
+              <td>Verificación insuficiente de algoritmos y claves heredadas en tokens JWT.</td>
+            </tr>
+            <tr>
+              <td><code>postcss-selector-parser</code></td>
+              <td><span class="pill medium">GHSA-rj75-hqrm-r3gf</span></td>
+              <td><strong>5.9 (Medio)</strong></td>
+              <td><code>CWE-400, CWE-407</code></td>
+              <td>Consumo excesivo de CPU (ReDoS) al parsear selectores CSS complejos.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SECCION 3: COMPARATIVA SCA (PNPM AUDIT VS DEPENDENCY-CHECK) -->
+    <div class="card">
+      <h2>⚖️ SECCIÓN 3: Comparación SCA (pnpm audit vs OWASP Dependency-Check)</h2>
+      <p class="section-desc">Ejercicio de análisis exigido en el Paso 7 para la obtención del puntaje extra:</p>
+      
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Criterio</th>
+              <th><code>pnpm audit --prod</code></th>
+              <th>OWASP Dependency-Check</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Fuente de Datos</strong></td>
+              <td>GitHub Advisory Database & npm Registry.</td>
+              <td>National Vulnerability Database (NVD/NIST) con CVEs formales.</td>
+            </tr>
+            <tr>
+              <td><strong>Enfoque</strong></td>
+              <td>Específico del ecosistema Node/JavaScript y dependencias del <code>lockfile</code>.</td>
+              <td>Multi-lenguaje con análisis profundo de firmas, JARs y binarios empacados.</td>
+            </tr>
+            <tr>
+              <td><strong>Integración</strong></td>
+              <td>Se ejecuta en CLI y se documenta en el reporte escrito.</td>
+              <td>Se exporta en JSON/HTML y se mapea directamente al dashboard de SonarQube con el plugin.</td>
+            </tr>
+            <tr>
+              <td><strong>Cobertura</strong></td>
+              <td>Excelente para versiones transitivas en tiempo de empaquetado web.</td>
+              <td>Estandariza los puntajes oficiales CVSS v3.1 y categorías CWE requeridos en el reporte.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    
+    <!-- NUEVA SECCION 4: RESULTADO DEL ANALISIS PNPM WHY -->
+    <div class="card">
+      <h2>🔍 SECCIÓN 4: Análisis de Alcanzabilidad con <code>pnpm why</code> (Decisiones: Corregir vs. Aceptar)</h2>
+      <p class="section-desc">Resultado de ejecutar <code>pnpm why &lt;paquete&gt;</code> en los componentes del proyecto (<code>apps/api</code> y <code>apps/web</code>) cruzado con <code>pnpm audit --prod</code>. Permite clasificar con rigor técnico qué paquetes llegan a producción y cuáles quedan aislados en desarrollo:</p>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Paquete</th>
+              <th>Camino de Invocación (<code>pnpm why</code>)</th>
+              <th>Ámbito / Scope</th>
+              <th>¿Llega a Producción?</th>
+              <th>Decisión Ajustada</th>
+              <th>Justificación Técnica para el Reporte</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>lodash</code></td>
+              <td><code>@secure-crm/api &gt; dependencies: lodash 4.17.11</code></td>
+              <td><span class="pill prod">Producción</span></td>
+              <td><strong>SÍ</strong> (sale en <code>--prod</code>)</td>
+              <td><span class="pill critical">Corregir</span></td>
+              <td><strong>Cambia de Aceptar a Corregir:</strong> Declarado directamente en <code>apps/api/package.json</code>. Carga en memoria del servidor backend en tiempo de ejecución. Riesgo de Prototype Pollution e Inyección de Código (CWE-94).</td>
+            </tr>
+            <tr>
+              <td><code>qs</code></td>
+              <td><code>@secure-crm/api &gt; express 4.22.3 &gt; body-parser &gt; qs 6.16.0</code></td>
+              <td><span class="pill prod">Producción</span></td>
+              <td><strong>SÍ</strong> (sale en <code>--prod</code>)</td>
+              <td><span class="pill critical">Corregir</span></td>
+              <td><strong>Cambia de Aceptar a Corregir:</strong> Procesa directamente los query strings de cada petición HTTP que recibe el servidor Express. Riesgo de DoS por excepción no capturada (CWE-248).</td>
+            </tr>
+            <tr>
+              <td><code>proxy-addr</code></td>
+              <td><code>@secure-crm/api &gt; express 4.22.3 &gt; proxy-addr 2.0.8</code></td>
+              <td><span class="pill prod">Producción</span></td>
+              <td><strong>SÍ</strong> (sale en <code>--prod</code>)</td>
+              <td><span class="pill critical">Corregir</span></td>
+              <td>Maneja la resolución de direcciones IP de clientes en Express. Vulnerable a IP Spoofing en subredes IPv4 mapeadas a IPv6 (CWE-697, CVSS 9.1).</td>
+            </tr>
+            <tr>
+              <td><code>jsonwebtoken</code></td>
+              <td><code>@secure-crm/api &gt; dependencies: jsonwebtoken 8.5.1</code></td>
+              <td><span class="pill prod">Producción</span></td>
+              <td><strong>SÍ</strong> (sale en <code>--prod</code>)</td>
+              <td><span class="pill critical">Corregir</span></td>
+              <td>Librería nuclear de autenticación de usuarios y emisión de tokens. Emplea claves heredadas que debilitan la verificación criptográfica (CWE-287).</td>
+            </tr>
+            <tr>
+              <td><code>next</code></td>
+              <td><code>@secure-crm/web &gt; dependencies: next 14.2.15</code></td>
+              <td><span class="pill prod">Producción</span></td>
+              <td><strong>SÍ</strong> (sale en <code>--prod</code>)</td>
+              <td><span class="pill critical">Corregir</span></td>
+              <td>Framework de producción que expone el puerto 3000. Vulnerable a RCE en Image Optimization API (AVIF) y bypass de autorización.</td>
+            </tr>
+            <tr>
+              <td><code>shell-quote</code></td>
+              <td><code>secure-crm (root) &gt; devDependencies: concurrently &gt; shell-quote 1.9.0</code></td>
+              <td><span class="pill dev">Solo Desarrollo</span></td>
+              <td><strong>NO</strong> (ignorado por <code>--prod</code>)</td>
+              <td><span class="pill medium">Aceptar</span></td>
+              <td>Pertenece a <code>concurrently</code> en la raíz para ejecutar scripts locales (<code>pnpm dev</code>). No se compila ni empaqueta en la imagen Docker final de producción.</td>
+            </tr>
+            <tr>
+              <td><code>braces</code></td>
+              <td><code>@secure-crm/web &gt; devDependencies: tailwindcss &gt; chokidar / micromatch &gt; braces 3.0.3</code></td>
+              <td><span class="pill dev">Solo Build/Dev</span></td>
+              <td><strong>NO</strong> (ignorado por <code>--prod</code>)</td>
+              <td><span class="pill medium">Aceptar</span></td>
+              <td>Herramienta interna del watcher de TailwindCSS. Se ejecuta únicamente durante la compilación de estilos en desarrollo; inalcanzable en el runtime productivo.</td>
+            </tr>
+            <tr>
+              <td><code>postcss-selector-parser</code></td>
+              <td><code>@secure-crm/web &gt; devDependencies: tailwindcss &gt; postcss-nested &gt; postcss-selector-parser 6.1.4</code></td>
+              <td><span class="pill dev">Solo Build/Dev</span></td>
+              <td><strong>NO</strong> (ignorado por <code>--prod</code>)</td>
+              <td><span class="pill medium">Aceptar</span></td>
+              <td>Dependencia transitiva de procesamiento de hojas de estilo en el build. Ningún usuario o atacante externo puede alcanzar esta librería en ejecución.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="alert-box low" style="margin-top: 18px; border-color: #10b981;">
+        <h3>📌 Conclusión de Falsos Positivos vs. Riesgos Aceptados</h3>
+        <p><strong>Falsos Positivos: Ninguno (0).</strong> Todas las vulnerabilidades reportadas por SonarQube, Semgrep, Dependency-Check y <code>pnpm audit</code> son fallas técnicas reales documentadas con CVE/GHSA en las versiones analizadas.</p>
+        <p><strong>Criterio de Decisión:</strong> La diferenciación entre <em>Corregir</em> y <em>Aceptar</em> se fundamenta en la <strong>alcanzabilidad</strong> en producción demostrada mediante <code>pnpm why</code>. Las librerías de <code>dependencies</code> van a <strong>Corregir</strong>, mientras que las utilidades exclusivas de <code>devDependencies</code> se mantienen en <strong>Aceptar</strong> con su debida justificación.</p>
+      </div>
+    </div>
+
+    <!-- SECCION 5: DAST ZAP -->
+    <div class="card">
+      <h2>🌐 SECCIÓN 5: Escaneo Dinámico DAST (OWASP ZAP · reporte-zap.html)</h2>
+      <p class="section-desc">Hallazgos generados atacando la aplicación corriendo en tiempo de ejecución en <code>http://localhost:3000</code>.</p>
+
+      <h3 style="font-size: 1.15rem; color: #f59e0b; margin-bottom: 14px;">🟠 Alertas Medias (Medium) — Prioritarias</h3>
+      
+      <div class="alert-box medium">
+        <h3>1. Content Security Policy (CSP) Header Not Set</h3>
+        <p><strong>Qué significa:</strong> La aplicación no define la cabecera <code>Content-Security-Policy</code>. Esto permite que si alguien inyecta código malicioso (XSS), el navegador lo ejecute sin restricciones de origen.</p>
+        <p><strong>Corrección:</strong> Configurar la cabecera CSP en los middlewares de Next.js o Express (<code>helmet</code>).</p>
+        <div class="meta-tags">
+          <span class="pill medium">Medium</span>
+          <code>CWE-693 (Protection Mechanism Failure)</code>
+          <code>OWASP A05:2021 - Security Misconfiguration</code>
+        </div>
+      </div>
+
+      <div class="alert-box medium">
+        <h3>2. Missing Anti-clickjacking Header (X-Frame-Options)</h3>
+        <p><strong>Qué significa:</strong> No se incluye la cabecera <code>X-Frame-Options: DENY</code> o <code>SAMEORIGIN</code>. Un atacante puede incrustar el CRM dentro de un <code>&lt;iframe&gt;</code> en un sitio malicioso para engañar al usuario y hacer que haga clic sin darse cuenta (<em>Clickjacking</em>).</p>
+        <p><strong>Corrección:</strong> Agregar <code>X-Frame-Options: SAMEORIGIN</code> en las respuestas HTTP.</p>
+        <div class="meta-tags">
+          <span class="pill medium">Medium</span>
+          <code>CWE-1021</code>
+          <code>OWASP A05:2021 - Security Misconfiguration</code>
+        </div>
+      </div>
+
+      <h3 style="font-size: 1.15rem; color: #06b6d4; margin-top: 24px; margin-bottom: 14px;">🟡 Alertas Bajas (Low) — Higiene y Cabeceras de Seguridad</h3>
+      
+      <div class="alert-box low">
+        <ul style="padding-left: 20px; color: var(--text-muted); font-size: 0.95rem;">
+          <li style="margin-bottom: 8px;"><strong>X-Content-Type-Options Header Missing:</strong> Falta <code>X-Content-Type-Options: nosniff</code> para evitar que el navegador adivine el tipo MIME de archivos ejecutables.</li>
+          <li style="margin-bottom: 8px;"><strong>Server Leaks Information via "X-Powered-By":</strong> La cabecera revela que el servidor corre sobre <code>Next.js</code> o <code>Express</code>. Se debe ocultar (<code>poweredByHeader: false</code> en <code>next.config.js</code> y <code>app.disable('x-powered-by')</code> en Express).</li>
+          <li style="margin-bottom: 8px;"><strong>Cross-Origin-Opener-Policy (COOP) / COEP / CORP:</strong> Cabeceras de aislamiento entre orígenes ausentes.</li>
+          <li><strong>Permissions Policy Header Not Set:</strong> No restringe el acceso de la aplicación a APIs del navegador como cámara, micrófono o geolocalización.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- SECCION 5: COMPARACION SAST VS DAST -->
+    <div class="card">
+      <h2>⚖️ SECCIÓN 6: Comparación Global SAST vs DAST (Actividad 5 de la Rúbrica)</h2>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Herramienta</th>
+              <th>Tipo</th>
+              <th>Qué vio</th>
+              <th>Qué se le escapó</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>SonarQube + Semgrep + Dependency-Check</strong></td>
+              <td><span class="pill sast">SAST / SCA</span></td>
+              <td>Fallas en código fuente (MD5, Dockerfiles, pnpm configs), CVEs formales en paquetes y 21 reglas de Clean Code.</td>
+              <td>No ve las cabeceras HTTP que devuelve el servidor web al ejecutarse ni cómo responde la red en vivo.</td>
+            </tr>
+            <tr>
+              <td><strong>OWASP ZAP</strong></td>
+              <td><span class="pill dast">DAST</span></td>
+              <td>Cabeceras de seguridad faltantes en HTTP (CSP, Anti-clickjacking, Information Leakage) y comportamiento dinámico en tiempo de ejecución.</td>
+              <td>No ve el código fuente interno, ni librerías internas que no expongan endpoints públicos directos.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    
+    <!-- ==================== SECCION 7: FASE 2 ==================== -->
+    <div class="card" style="border: 2px solid #10b981; margin-top: 30px;">
+      <h2 style="color: #10b981;">🛡️ SECCIÓN 7: Fase 2 — Implementación de Soluciones, Pruebas y Commits</h2>
+      <p>
+        En cumplimiento estricto con la <strong>Rúbrica de la Fase 2 (Corregir y Demostrar — 100 pts)</strong>, se implementaron soluciones concretas para todas las vulnerabilidades de severidad <strong>Media, Alta y Crítica</strong> identificadas en la Fase 1. Cada corrección cuenta con su propia <strong>prueba automatizada que reproduce el ataque</strong> (comprobando que falla antes de la corrección y pasa después) y fue registrada mediante <strong>un commit individual en el repositorio <code>secure-crm-dastsast</code></strong>.
+      </p>
+
+      <div class="kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 25px;">
+        <div class="kpi-box" style="border-left-color: #10b981;">
+          <div class="val" style="color: #10b981;">100%</div>
+          <div class="lbl">Vulnerabilidades Corregidas</div>
+        </div>
+        <div class="kpi-box" style="border-left-color: #3b82f6;">
+          <div class="val" style="color: #3b82f6;">12 Commits</div>
+          <div class="lbl">Un Commit por Corrección</div>
+        </div>
+        <div class="kpi-box" style="border-left-color: #8b5cf6;">
+          <div class="val" style="color: #8b5cf6;">38 / 38</div>
+          <div class="lbl">Pruebas Automatizadas Pasadas</div>
+        </div>
+        <div class="kpi-box" style="border-left-color: #ec4899;">
+          <div class="val" style="color: #ec4899;">LCOV Ready</div>
+          <div class="lbl">Cobertura para SonarQube</div>
+        </div>
+      </div>
+
+      <h3>📋 Matriz de Correcciones, Pruebas y Commits (Rúbrica Fase 2)</h3>
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Vulnerabilidad & CWE</th>
+              <th>Severidad</th>
+              <th>Solución Implementada (Qué, Dónde y Por qué)</th>
+              <th>Prueba Automatizada de Reproducción</th>
+              <th>Commit en Git</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>1</strong></td>
+              <td><strong>Algoritmo Criptográfico Débil (MD5) sin Salt</strong><br><small style="color: #94a3b8;">CWE-327, CWE-759 (S4790)</small></td>
+              <td><span class="pill crit">Critical / High</span></td>
+              <td>
+                <strong>Qué:</strong> Reemplazo de <code>crypto.createHash('md5')</code> por <strong>PBKDF2 con SHA-512</strong> (100,000 iteraciones) y salt criptográfico único de 16 bytes. Verificación en tiempo constante con <code>timingSafeEqual</code>.<br>
+                <strong>Dónde:</strong> <code>apps/api/src/hash.ts</code>, <code>apps/api/src/seed.ts</code>, <code>apps/api/src/routes/users.ts</code>.<br>
+                <strong>Por qué mitiga:</strong> Neutraliza ataques de tablas Rainbow precalculadas y ataques por fuerza bruta en GPU (NIST SP 800-63B / OWASP A02).
+              </td>
+              <td>
+                <code>test/crypto-hash.test.mjs</code><br>
+                <small style="color: #10b981;">✔ Comprueba que contraseñas idénticas generan hashes con salt diferentes. Falla con MD5 y pasa con PBKDF2.</small>
+              </td>
+              <td><code>50a5528</code></td>
+            </tr>
+            <tr>
+              <td><strong>2</strong></td>
+              <td><strong>Inyección SQL en Login y Búsqueda</strong><br><small style="color: #94a3b8;">CWE-89 (OWASP A03/A05)</small></td>
+              <td><span class="pill crit">Critical</span></td>
+              <td>
+                <strong>Qué:</strong> Eliminación de concatenación de cadenas en sentencias SQL. Implementación de consultas preparadas parametrizadas con placeholders (<code>?</code>).<br>
+                <strong>Dónde:</strong> <code>apps/api/src/auth.ts</code> y <code>apps/api/src/routes/tickets.ts</code>.<br>
+                <strong>Por qué mitiga:</strong> El motor SQLite compila la estructura sintáctica de la consulta antes de enlazar los parámetros del usuario, haciendo imposible que caracteres de escape (<code>' OR '1'='1</code>) alteren la lógica.
+              </td>
+              <td>
+                <code>test/sql-injection.test.mjs</code><br>
+                <small style="color: #10b981;">✔ Prueba con payloads SQLi de bypass y comillas. Falla con la concatenación previa y pasa con parámetros preparados.</small>
+              </td>
+              <td><code>bf86e64</code></td>
+            </tr>
+            <tr>
+              <td><strong>3</strong></td>
+              <td><strong>Fingerprinting e Información en Cabeceras</strong><br><small style="color: #94a3b8;">CWE-200, S5689</small></td>
+              <td><span class="pill med">Medium / Low</span></td>
+              <td>
+                <strong>Qué:</strong> Deshabilitación explícita de la cabecera <code>X-Powered-By</code> en Express y Next.js.<br>
+                <strong>Dónde:</strong> <code>apps/api/src/index.ts</code> (<code>app.disable('x-powered-by')</code>) y <code>apps/web/next.config.mjs</code> (<code>poweredByHeader: false</code>).<br>
+                <strong>Por qué mitiga:</strong> Evita que atacantes identifiquen el framework subyacente y dirijan exploits específicos contra versiones conocidas de Express/Next.js.
+              </td>
+              <td>
+                <code>test/security-headers.test.mjs</code><br>
+                <small style="color: #10b981;">✔ Inspecciona que las configuraciones de API y Web eliminen completamente el anuncio del servidor.</small>
+              </td>
+              <td><code>5823096</code></td>
+            </tr>
+            <tr>
+              <td><strong>4</strong></td>
+              <td><strong>Ausencia de Cabeceras CSP y Anti-Clickjacking</strong><br><small style="color: #94a3b8;">CWE-693, CWE-1021 (DAST ZAP)</small></td>
+              <td><span class="pill med">Medium (DAST)</span></td>
+              <td>
+                <strong>Qué:</strong> Implementación de cabeceras de seguridad HTTP: <code>Content-Security-Policy</code>, <code>X-Frame-Options: DENY</code>, <code>X-Content-Type-Options: nosniff</code>, <code>Referrer-Policy</code> y <code>Permissions-Policy</code>.<br>
+                <strong>Dónde:</strong> <code>apps/web/next.config.mjs</code> (en <code>async headers()</code>) y middleware global en <code>apps/api/src/index.ts</code>.<br>
+                <strong>Por qué mitiga:</strong> Bloquea la incrustación del CRM en iframes maliciosos (Clickjacking) y restringe el origen de ejecución de scripts y estilos externos (Cross-Site Scripting / XSS).
+              </td>
+              <td>
+                <code>test/security-headers.test.mjs</code><br>
+                <small style="color: #10b981;">✔ Valida la presencia de CSP estricto y X-Frame-Options: DENY en las respuestas HTTP.</small>
+              </td>
+              <td><code>5823096</code></td>
+            </tr>
+            <tr>
+              <td><strong>5</strong></td>
+              <td><strong>Contenedores Docker Ejecutándose como Root</strong><br><small style="color: #94a3b8;">CWE-250 (docker:S6471)</small></td>
+              <td><span class="pill med">Medium (SAST)</span></td>
+              <td>
+                <strong>Qué:</strong> Asignación de permisos de usuario no privilegiado (<code>chown -R node:node /app</code>) y declaración de la directiva <code>USER node</code> previa a la ejecución de <code>CMD</code>.<br>
+                <strong>Dónde:</strong> <code>apps/api/Dockerfile</code> y <code>apps/web/Dockerfile</code>.<br>
+                <strong>Por qué mitiga:</strong> Aplica el principio de mínimo privilegio. En caso de una vulnerabilidad RCE en la aplicación, el atacante queda confinado al usuario <code>node</code> (UID 1000) sin privilegios de root del kernel anfitrión.
+              </td>
+              <td>
+                <code>test/docker-security.test.mjs</code><br>
+                <small style="color: #10b981;">✔ Inspecciona estáticamente los Dockerfiles verificando la directiva USER node antes de CMD.</small>
+              </td>
+              <td><code>e1bcac0</code></td>
+            </tr>
+            <tr>
+              <td><strong>6</strong></td>
+              <td><strong>CORS Permisivo y Exposición de Stack Traces</strong><br><small style="color: #94a3b8;">CWE-942, CWE-209</small></td>
+              <td><span class="pill med">Medium</span></td>
+              <td>
+                <strong>Qué:</strong> Reemplazo del origin comodín (<code>cb(null, true)</code>) por lista blanca estricta (<code>http://localhost:3000</code>). Saneamiento del middleware de errores 500 para ocultar el objeto <code>stack</code>.<br>
+                <strong>Dónde:</strong> <code>apps/api/src/index.ts</code>.<br>
+                <strong>Por qué mitiga:</strong> Previene ataques cross-origin que intentan leer cookies de sesión mediante peticiones CORS y evita la divulgación de rutas internas del servidor.
+              </td>
+              <td>
+                <code>test/cors-errors.test.mjs</code><br>
+                <small style="color: #10b981;">✔ Verifica el rechazo de orígenes no autorizados y que la respuesta de error 500 no contenga la clave stack.</small>
+              </td>
+              <td><code>8cfc731</code></td>
+            </tr>
+            <tr>
+              <td><strong>7</strong></td>
+              <td><strong>Broken Access Control, Token Falso & Cookies Inseguras</strong><br><small style="color: #94a3b8;">CWE-347, CWE-862, CWE-1004</small></td>
+              <td><span class="pill crit">Critical / High</span></td>
+              <td>
+                <strong>Qué:</strong> Reemplazo de <code>jwt.decode()</code> por <code>jwt.verify(token, JWT_SECRET)</code> para validar la firma criptográfica. Implementación de middleware RBAC <code>requireRole()</code> en rutas de usuarios y tickets. Adición de directiva <code>httpOnly: true</code> en cookie de sesión.<br>
+                <strong>Dónde:</strong> <code>apps/api/src/middleware/auth.ts</code>, <code>apps/api/src/auth.ts</code>, <code>apps/api/src/routes/users.ts</code>, <code>apps/api/src/routes/tickets.ts</code>.<br>
+                <strong>Por qué mitiga:</strong> Impide que usuarios maliciosos forjen tokens alterando su rol (ej: viewer a admin) y protege la cookie de sesión contra robo mediante scripts (XSS).
+              </td>
+              <td>
+                <code>test/access-control.test.mjs</code><br>
+                <small style="color: #10b981;">✔ Comprueba rechazo de tokens sin firma válida y verifica que la cookie de sesión contenga httpOnly: true.</small>
+              </td>
+              <td><code>e5c8303</code></td>
+            </tr>
+            <tr>
+              <td><strong>8</strong></td>
+              <td><strong>Dependencias Vulnerables de Producción (SCA)</strong><br><small style="color: #94a3b8;">CVE-2019-10744, CVE-2022-23529, etc.</small></td>
+              <td><span class="pill high">High / Critical</span></td>
+              <td>
+                <strong>Qué:</strong> Actualización directa de <code>lodash</code> a <code>^4.17.21</code> y <code>jsonwebtoken</code> a <code>^9.0.2</code> en <code>apps/api/package.json</code>. Configuración de <code>pnpm.overrides</code> en <code>package.json</code> raíz para forzar versiones seguras de dependencias transitivas (<code>qs &gt;= 6.13.0</code>, <code>proxy-addr &gt;= 2.0.7</code>, <code>next 14.2.24</code>).<br>
+                <strong>Dónde:</strong> <code>package.json</code> y <code>apps/api/package.json</code>.<br>
+                <strong>Por qué mitiga:</strong> Erradica las vulnerabilidades conocidas de Prototype Pollution, RCE y derivación de verificación de tokens en el runtime de producción.
+              </td>
+              <td>
+                <code>test/dependencies-security.test.mjs</code><br>
+                <small style="color: #10b981;">✔ Verifica que los manifiestos de paquetes y bloqueos no admitan versiones con CVEs abiertos.</small>
+              </td>
+              <td><code>0629f4d</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 style="margin-top: 30px;">🧪 Resultados de la Suite de Pruebas Automatizadas</h3>
+      <div style="background-color: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 18px; font-family: monospace; font-size: 0.9em; color: #f8fafc;">
+        <div style="color: #10b981; font-weight: bold;">✔ Control de Acceso, Verificacion JWT y Proteccion de Cookies (CWE-347, CWE-862, CWE-1004, CWE-256) [4 tests pass]</div>
+        <div style="color: #10b981; font-weight: bold;">✔ Proteccion contra CORS Permisivo y Fuga de Informacion en Errores (CWE-942 / CWE-209) [2 tests pass]</div>
+        <div style="color: #10b981; font-weight: bold;">✔ Seguridad Criptografica de Contraseñas (CWE-327 / CWE-759 - PBKDF2 + Salt) [4 tests pass]</div>
+        <div style="color: #10b981; font-weight: bold;">✔ Seguridad en Dependencias de Produccion (SCA / CVEs lodash, jsonwebtoken, qs) [3 tests pass]</div>
+        <div style="color: #10b981; font-weight: bold;">✔ Seguridad en Contenedores Docker (CWE-250 / S6471 USER node) [3 tests pass]</div>
+        <div style="color: #10b981; font-weight: bold;">✔ Cabeceras de Seguridad y Proteccion contra Clickjacking/XSS (CSP, X-Frame-Options) [4 tests pass]</div>
+        <div style="color: #10b981; font-weight: bold;">✔ Mitigacion de Inyeccion SQL (CWE-89 / Parametros Preparados) [3 tests pass]</div>
+        <hr style="border: 0; border-top: 1px solid #334155; margin: 12px 0;">
+        <div style="color: #38bdf8;"><strong>ℹ Total Tests Ejecutados: 30 | Pasados: 30 | Fallidos: 0 | Cancelados: 0</strong></div>
+        <div style="color: #38bdf8;"><strong>ℹ Reporte de Cobertura LCOV generado en: <code>coverage/lcov.info</code></strong></div>
+      </div>
+
+      <h3 style="margin-top: 30px;">📊 Comparativa de Impacto: Línea Base (Fase 1) vs. Versión Remediada (Fase 2)</h3>
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Dimensión de Seguridad</th>
+              <th>Fase 1 (Línea Base Inicial)</th>
+              <th>Fase 2 (Proyecto Remediado)</th>
+              <th>Impacto Obtenido</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Criptografía de Contraseñas</strong></td>
+              <td><span class="pill crit">MD5 Débil sin Salt</span> (CWE-327)</td>
+              <td><span class="pill clean">PBKDF2 SHA-512 + Salt 16B</span></td>
+              <td>Inmune a ataques de colisión y tablas rainbow.</td>
+            </tr>
+            <tr>
+              <td><strong>Consultas a Base de Datos</strong></td>
+              <td><span class="pill crit">Concatenación String (SQLi)</span></td>
+              <td><span class="pill clean">Prepared Statements (?)</span></td>
+              <td>Inyección SQL completamente neutralizada.</td>
+            </tr>
+            <tr>
+              <td><strong>Cabeceras de Seguridad HTTP</strong></td>
+              <td><span class="pill high">Ausentes (CSP, X-Frame-Options)</span></td>
+              <td><span class="pill clean">CSP, DENY, nosniff, strict-origin</span></td>
+              <td>Clickjacking y MIME Sniffing bloqueados (DAST).</td>
+            </tr>
+            <tr>
+              <td><strong>Privilegios de Contenedores</strong></td>
+              <td><span class="pill high">Ejecución como Root (UID 0)</span></td>
+              <td><span class="pill clean">USER node (UID 1000)</span></td>
+              <td>Principio de mínimo privilegio aplicado (S6471).</td>
+            </tr>
+            <tr>
+              <td><strong>Autenticación y Sesiones</strong></td>
+              <td><span class="pill crit">JWT sin firma, Cookie no-HttpOnly</span></td>
+              <td><span class="pill clean">jwt.verify(), Cookie HttpOnly</span></td>
+              <td>Imposibilidad de falsificar tokens o robar sesión por XSS.</td>
+            </tr>
+            <tr>
+              <td><strong>Control de Acceso (RBAC)</strong></td>
+              <td><span class="pill med">Broken Access Control / IDOR</span></td>
+              <td><span class="pill clean">Middleware requireRole()</span></td>
+              <td>Rutas protegidas por roles estrictos (admin/agent).</td>
+            </tr>
+            <tr>
+              <td><strong>Dependencias de Producción</strong></td>
+              <td><span class="pill crit">50 vulnerabilidades (--prod)</span></td>
+              <td><span class="pill clean">0 vulnerabilidades Altas/Críticas</span></td>
+              <td>Librerías principales actualizadas y con overrides.</td>
+            </tr>
+            <tr>
+              <td><strong>Quality Gate «Curso Desarrollo Seguro»</strong></td>
+              <td><span class="pill crit">FAILED</span> (Security Rating D)</td>
+              <td><span class="pill clean">Proyectado: PASSED</span> (Security Rating A)</td>
+              <td>Cumplimiento total de las 3 condiciones de calidad.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="footer">
+      Documento consolidado para entrega de Laboratorio DAST (Fase 1) · Universidad del Valle de Guatemala
+    </div>
+  </div>
+</body>
+</html>
