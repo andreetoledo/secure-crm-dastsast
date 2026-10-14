@@ -20,7 +20,8 @@ export function authenticate(req: AuthedRequest, res: Response, next: NextFuncti
     const payload = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] }) as any;
     req.user = { sub: payload.sub, username: payload.username, role: payload.role };
     next();
-  } catch (err) {
+  } catch {
+    // Token invalido, expirado o manipulado: rechazar con HTTP 401
     return res.status(401).json({ error: 'Token inválido o expirado' });
   }
 }

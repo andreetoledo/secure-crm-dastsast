@@ -22,7 +22,7 @@ export function hashPassword(password: string): string {
  * (timingSafeEqual) para mitigar ataques de temporizacion (CWE-208).
  */
 export function verifyPassword(password: string, storedHash: string): boolean {
-  if (!password || !storedHash || !storedHash.includes(':')) {
+  if (!password || !storedHash?.includes(':')) {
     return false;
   }
 
