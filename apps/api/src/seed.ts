@@ -1,5 +1,5 @@
 import { db, initSchema } from './db';
-import { weakHash } from './hash';
+import { hashPassword } from './hash';
 
 initSchema();
 
@@ -26,7 +26,7 @@ for (const u of users) {
     email: u.email,
     full_name: u.full_name,
     role: u.role,
-    password_hash: weakHash(u.password),
+    password_hash: hashPassword(u.password),
   });
   userIds[u.username] = Number(info.lastInsertRowid);
 }

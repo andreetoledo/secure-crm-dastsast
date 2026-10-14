@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { db } from '../db';
-import { weakHash } from '../hash';
+import { hashPassword } from '../hash';
 import { authenticate, AuthedRequest } from '../middleware/auth';
 
 export const usersRouter = Router();
@@ -57,7 +57,7 @@ usersRouter.post('/', (req: AuthedRequest, res) => {
         email: b.email ?? '',
         full_name: b.fullName ?? b.username,
         role: b.role ?? 'viewer',
-        password_hash: weakHash(String(b.password ?? 'changeme')),
+        password_hash: hashPassword(String(b.password ?? 'changeme')),
       });
     const r = db.prepare('SELECT * FROM users WHERE id = ?').get(info.lastInsertRowid) as any;
     res.status(201).json({
