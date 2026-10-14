@@ -27,9 +27,22 @@ app.use((_req, res, next) => {
 
 // CORS totalmente permisivo con credenciales (A02 Security Misconfiguration / CWE-942):
 // refleja cualquier Origin y permite enviar cookies. Habilita CSRF y robo cross-origin.
+// Politica CORS restringida con lista blanca autorizada (mitiga CWE-942)
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  process.env.FRONTEND_URL,
+].filter(Boolean) as string[];
+
 app.use(
   cors({
-    origin: (_origin, cb) => cb(null, true),
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Bloqueado por política CORS'));
+      }
+    },
     credentials: true,
   })
 );
@@ -51,11 +64,12 @@ app.use('/api/dashboard', dashboardRouter);
 
 // Manejador de errores que devuelve el stack completo al cliente
 // (A02 Security Misconfiguration / CWE-209: exposición de información sensible).
+// Manejador centralizado de errores seguro (mitiga CWE-209: no expone stack traces en produccion)
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error('Error interno capturado:', err?.message || err);
   res.status(500).json({
     error: 'Error interno del servidor',
-    message: err?.message,
-    stack: err?.stack,
+    message: process.env.NODE_ENV === 'development' ? err?.message : 'Ha ocurrido un error inesperado',
   });
 });
 
