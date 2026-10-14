@@ -14,3 +14,5 @@ apps/api/data/*.db-journal
 # Guía del instructor (solucionario) — se mantiene fuera del repo
 docs/guia-instructor.html
 docs/INSTRUCTOR.md
+
+coverage/

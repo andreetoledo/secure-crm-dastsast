@@ -11,7 +11,9 @@
     "build": "pnpm --filter @secure-crm/shared build && pnpm --filter @secure-crm/api build && pnpm --filter @secure-crm/web build",
     "start": "concurrently -n API,WEB -c green,cyan \"pnpm --filter @secure-crm/api start\" \"pnpm --filter @secure-crm/web start\"",
     "docker:up": "docker compose up --build",
-    "docker:down": "docker compose down -v"
+    "docker:down": "docker compose down -v",
+    "test": "node --test test/*.test.mjs",
+    "test:coverage": "node --test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=coverage/lcov.info test/*.test.mjs"
   },
   "devDependencies": {
     "concurrently": "^9.1.0"
