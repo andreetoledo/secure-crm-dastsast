@@ -1,3 +1,8 @@
 packages:
   - 'apps/*'
   - 'packages/*'
+
+# Configuracion de politicas de seguridad de cadena de suministro (Semgrep pnpm rules)
+trustPolicy: no-downgrade
+blockExoticSubdeps: true
+minimumReleaseAge: 10080

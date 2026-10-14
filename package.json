@@ -31,8 +31,13 @@
       "lodash": "^4.17.21",
       "jsonwebtoken": "^9.0.2",
       "qs": ">=6.13.0",
-      "proxy-addr": ">=2.0.7",
-      "next": "14.2.24"
+      "proxy-addr": ">=2.0.8",
+      "next": "^14.2.24",
+      "shell-quote": "^1.8.3",
+      "postcss": "^8.4.49",
+      "braces": "^3.0.3",
+      "source-map-js": "^1.2.1",
+      "postcss-selector-parser": "^6.1.2"
     }
   }
 }
