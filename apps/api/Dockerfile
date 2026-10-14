@@ -18,7 +18,7 @@ COPY apps/api apps/api
 RUN pnpm --filter @secure-crm/shared build && pnpm --filter @secure-crm/api build
 
 # Mitigacion docker:S6471: Asignar propiedad a usuario no privilegiado node
-RUN chown -R node:node /app
+RUN chown -R node:node /app && chmod -R 775 /app
 USER node
 
 EXPOSE 4000
