@@ -12,6 +12,19 @@ initSchema();
 const app = express();
 const PORT = Number(process.env.API_PORT || 4000);
 
+// Deshabilitar explicitamente x-powered-by (mitiga S5689 / fingerprinting)
+app.disable('x-powered-by');
+
+// Cabeceras de seguridad HTTP (mitiga CWE-693, CWE-1021, CWE-16 y alertas DAST de ZAP)
+app.use((_req, res, next) => {
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Content-Security-Policy', "default-src 'self'; frame-ancestors 'none';");
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  next();
+});
+
 // CORS totalmente permisivo con credenciales (A02 Security Misconfiguration / CWE-942):
 // refleja cualquier Origin y permite enviar cookies. Habilita CSRF y robo cross-origin.
 app.use(
