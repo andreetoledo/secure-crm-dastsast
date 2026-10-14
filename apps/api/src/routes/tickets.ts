@@ -33,12 +33,16 @@ const SELECT = `
 // GET /api/tickets?q=...
 // Búsqueda con concatenación de strings (A05 / CWE-89: SQLi de segundo vector).
 // El término 'q' se refleja tal cual en el frontend -> habilita XSS reflejado (CWE-79).
+// GET /api/tickets?q=...
+// Consulta parametrizada segura (mitiga CWE-89: SQL Injection).
+// El input del usuario se vincula exclusivamente como dato, neutralizando caracteres de escape.
 ticketsRouter.get('/', (req, res) => {
   const q = (req.query.q as string) || '';
   let rows: any[];
   if (q) {
-    const sql = `${SELECT} WHERE t.title LIKE '%${q}%' OR t.description LIKE '%${q}%' OR t.customer_name LIKE '%${q}%' ORDER BY t.created_at DESC`;
-    rows = db.prepare(sql).all();
+    const term = `%${q}%`;
+    const sql = `${SELECT} WHERE t.title LIKE ? OR t.description LIKE ? OR t.customer_name LIKE ? ORDER BY t.created_at DESC`;
+    rows = db.prepare(sql).all(term, term, term);
   } else {
     rows = db.prepare(`${SELECT} ORDER BY t.created_at DESC`).all();
   }
