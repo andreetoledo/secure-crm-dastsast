@@ -4,12 +4,7 @@ import fs from 'node:fs';
 
 const dataDir = path.join(__dirname, '..', 'data');
 if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true, mode: 0o777 });
-}
-try {
-  fs.chmodSync(dataDir, 0o777);
-} catch {
-  // Ignorar error si el sistema operativo no permite chmod
+  fs.mkdirSync(dataDir, { recursive: true, mode: 0o755 });
 }
 
 const dbPath = path.join(dataDir, 'crm.db');
