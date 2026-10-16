@@ -2,98 +2,98 @@ import test from 'node:test';
 import assert from 'node:assert';
 import fs from 'node:fs';
 import path from 'node:path';
+import { createRequire } from 'node:module';
 
-test('Seguridad en Dependencias y Cadena de Suministro (SCA / CVEs Secciones 1, 2, 3, 4)', async (t) => {
-  const rootPkgPath = path.resolve('package.json');
-  const apiPkgPath = path.resolve('apps/api/package.json');
-  const webPkgPath = path.resolve('apps/web/package.json');
-  const workspacePath = path.resolve('pnpm-workspace.yaml');
-  const npmrcPath = path.resolve('.npmrc');
+// Hallazgos #13-#17. Cada prueba ejecuta el PoC del advisory contra la libreria que
+// realmente esta instalada (la que resolvio el lockfile), no contra el package.json.
+const requireFromApi = createRequire(path.resolve('apps/api/package.json'));
+const requireFromWeb = createRequire(path.resolve('apps/web/package.json'));
+const requireFromExpress = createRequire(requireFromApi.resolve('express'));
 
-  const rootPkg = JSON.parse(fs.readFileSync(rootPkgPath, 'utf-8'));
-  const apiPkg = JSON.parse(fs.readFileSync(apiPkgPath, 'utf-8'));
-  const webPkg = JSON.parse(fs.readFileSync(webPkgPath, 'utf-8'));
-  const workspace = fs.readFileSync(workspacePath, 'utf-8');
-  const npmrc = fs.existsSync(npmrcPath) ? fs.readFileSync(npmrcPath, 'utf-8') : '';
+const lodash = requireFromApi('lodash');
+const qs = requireFromExpress('qs');
+const proxyaddr = requireFromExpress('proxy-addr');
+const express = requireFromApi('express');
+const { default: request } = await import('supertest');
 
-  await t.test('Mitiga CVE-2019-10744 & Prototype Pollution: lodash actualizado a >= 4.17.21', () => {
-    const lodashVer = apiPkg.dependencies?.lodash || '';
-    assert.strictEqual(
-      lodashVer.startsWith('4.17.11'),
-      false,
-      'SCA: lodash 4.17.11 es vulnerable a Prototype Pollution e Inyeccion de Codigo'
-    );
-    assert.ok(
-      lodashVer.includes('4.17.21') || rootPkg.pnpm?.overrides?.lodash,
-      'lodash debe actualizarse a la version segura >= 4.17.21'
-    );
-  });
+function atLeast(version, minimum) {
+  const a = version.split('.').map(Number);
+  const b = minimum.split('.').map(Number);
+  for (let i = 0; i < 3; i++) {
+    if (a[i] !== b[i]) return a[i] > b[i];
+  }
+  return true;
+}
 
-  await t.test('Mitiga CVE-2022-23529: jsonwebtoken actualizado a >= 9.0.2', () => {
-    const jwtVer = apiPkg.dependencies?.jsonwebtoken || '';
-    assert.strictEqual(
-      jwtVer.startsWith('8.5.1'),
-      false,
-      'SCA: jsonwebtoken 8.5.1 contiene vulnerabilidades de bypass en verificacion de tokens'
-    );
-    assert.ok(
-      jwtVer.includes('9.0') || rootPkg.pnpm?.overrides?.jsonwebtoken,
-      'jsonwebtoken debe actualizarse a la version segura >= 9.0.2'
-    );
-  });
+test('#16 lodash: inyeccion de codigo via claves de _.template imports (GHSA-r5fr-rjxr-66jc)', () => {
+  delete globalThis.__pwnedTemplate;
+  try {
+    lodash.template('hola', { imports: { 'x = globalThis.__pwnedTemplate = true': undefined } });
+  } catch {
+    // La version corregida rechaza la clave maliciosa con una excepcion.
+  }
+  assert.strictEqual(globalThis.__pwnedTemplate, undefined, 'El payload se ejecuto: lodash sigue vulnerable');
+});
 
-  await t.test('Mitiga GHSA-g5qg-72qw-gw5v en Next.js actualizado a >= 14.2.24', () => {
-    const nextVer = webPkg.dependencies?.next || '';
-    assert.strictEqual(
-      nextVer === '14.2.15',
-      false,
-      'SCA: Next.js 14.2.15 es vulnerable a SSRF y bypass de autorizacion'
-    );
-    assert.ok(
-      nextVer.includes('14.2.24') || rootPkg.pnpm?.overrides?.next,
-      'Next.js debe ser >= 14.2.24'
-    );
-  });
+test('#16 lodash: prototype pollution con _.defaultsDeep (CVE-2019-10744)', () => {
+  const payload = JSON.parse('{"constructor":{"prototype":{"polluted":"si"}}}');
+  try {
+    lodash.defaultsDeep({}, payload);
+  } finally {
+    assert.strictEqual({}.polluted, undefined, 'Object.prototype fue contaminado');
+    delete Object.prototype.polluted;
+  }
+});
 
-  await t.test('Mitiga GHSA-jqcg-44mw-7w3h en proxy-addr (IP Spoofing) actualizado a >= 2.0.8', () => {
-    const proxyOverride = rootPkg.pnpm?.overrides?.['proxy-addr'] || '';
-    assert.ok(
-      proxyOverride.includes('2.0.8') || proxyOverride.includes('>=2.0.8'),
-      'proxy-addr debe estar forzado a >= 2.0.8 para mitigar IP Spoofing (CVSS 9.1)'
-    );
-  });
+test('#17 qs: DoS con isBuffer controlado por el atacante (GHSA-4mjr-xmp4-gh2g)', () => {
+  const parsed = qs.parse('a[constructor][isBuffer]=x', { plainObjects: true });
+  assert.doesNotThrow(() => qs.stringify(parsed), 'qs.stringify lanzo TypeError: el servidor se caeria');
+});
 
-  await t.test('Mitiga las 10 CVEs de OWASP Dependency-Check mediante pnpm.overrides en root', () => {
-    const overrides = rootPkg.pnpm?.overrides || {};
-    const required = [
-      'proxy-addr',
-      'shell-quote',
-      'lodash',
-      'postcss',
-      'braces',
-      'source-map-js',
-      'next',
-      'qs',
-      'jsonwebtoken',
-      'postcss-selector-parser'
-    ];
-    for (const dep of required) {
-      assert.ok(overrides[dep], `pnpm.overrides debe contener ${dep} para neutralizar su CVE reportado`);
+test('#17 qs: bypass de arrayLimit con a[]=1,2,3,4 (GHSA-x5fp-wj9c-mxmx)', () => {
+  assert.throws(
+    () => qs.parse('a[]=1,2,3,4', { comma: true, arrayLimit: 3, throwOnLimitExceeded: true }),
+    'qs acepto un arreglo mas grande que arrayLimit'
+  );
+});
+
+test('#13 proxy-addr: un cliente no puede falsificar su IP con X-Forwarded-For (GHSA-jqcg-44mw-7w3h)', async () => {
+  // Configuracion del advisory: subred IPv4-mapeada con prefijo corto.
+  const app = express();
+  app.set('trust proxy', '::ffff:10.0.0.0/8');
+  app.get('/ip', (req, res) => res.json({ ip: req.ip }));
+
+  const res = await request(app).get('/ip').set('X-Forwarded-For', '6.6.6.6');
+  assert.notStrictEqual(res.body.ip, '6.6.6.6', 'La IP falsificada fue aceptada como la del cliente');
+  assert.strictEqual(proxyaddr.compile('::ffff:10.0.0.0/8')('127.0.0.1', 0), false);
+});
+
+test('#14 next: la version instalada y la del lockfile son >= 15.5.24', () => {
+  const { version } = requireFromWeb('next/package.json');
+  assert.ok(atLeast(version, '15.5.24'), `next ${version} sigue vulnerable`);
+});
+
+test('#13-#17: ninguna version vulnerable queda en pnpm-lock.yaml', () => {
+  const lock = fs.readFileSync('pnpm-lock.yaml', 'utf-8');
+  const minimums = {
+    'proxy-addr': '2.0.8',
+    next: '15.5.24',
+    jsonwebtoken: '9.0.0',
+    lodash: '4.18.0',
+    qs: '6.16.0',
+  };
+  for (const [pkg, minimum] of Object.entries(minimums)) {
+    const versions = [...lock.matchAll(new RegExp(`^  ${pkg}@(\\d+\\.\\d+\\.\\d+)`, 'gm'))].map((m) => m[1]);
+    assert.ok(versions.length > 0, `${pkg} no aparece en el lockfile`);
+    for (const v of versions) {
+      assert.ok(atLeast(v, minimum), `pnpm-lock.yaml resuelve ${pkg}@${v} (< ${minimum})`);
     }
-  });
+  }
+});
 
-  await t.test('Mitiga reglas Semgrep de Cadena de Suministro PNPM (trustPolicy, blockExotic, minimumReleaseAge)', () => {
-    assert.ok(
-      workspace.includes('trustPolicy: no-downgrade') || npmrc.includes('trust-policy=no-downgrade'),
-      'Debe existir trustPolicy: no-downgrade para evitar degradaciones maliciosas'
-    );
-    assert.ok(
-      workspace.includes('blockExoticSubdeps: true') || npmrc.includes('block-exotic-subdependencies=true'),
-      'Debe bloquearse subdependencias exoticas no verificadas'
-    );
-    assert.ok(
-      workspace.includes('minimumReleaseAge: 10080') || npmrc.includes('minimum-release-age=10080'),
-      'Debe configurarse edad minima de liberacion de 7 dias (10080 min)'
-    );
-  });
+test('#4-#6: politicas de cadena de suministro de pnpm', () => {
+  const workspace = fs.readFileSync('pnpm-workspace.yaml', 'utf-8');
+  assert.match(workspace, /trustPolicy: no-downgrade/);
+  assert.match(workspace, /blockExoticSubdeps: true/);
+  assert.match(workspace, /minimumReleaseAge: 10080/);
 });

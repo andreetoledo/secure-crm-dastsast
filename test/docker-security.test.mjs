@@ -28,6 +28,13 @@ test('Seguridad en Contenedores Docker (CWE-250 / SonarQube docker:S6471)', asyn
     );
   });
 
+  await t.test('Las imagenes instalan exactamente las versiones corregidas de pnpm-lock.yaml', () => {
+    for (const content of [apiDockerContent, webDockerContent]) {
+      assert.match(content, /COPY [^\n]*pnpm-lock\.yaml/);
+      assert.match(content, /pnpm install --frozen-lockfile/);
+    }
+  });
+
   await t.test('Verifica que USER este posicionado antes de la instruccion CMD', () => {
     const apiUserIndex = apiDockerContent.indexOf('USER');
     const apiCmdIndex = apiDockerContent.indexOf('CMD');

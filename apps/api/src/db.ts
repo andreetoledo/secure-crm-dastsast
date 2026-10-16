@@ -2,14 +2,17 @@ import Database from 'better-sqlite3';
 import path from 'node:path';
 import fs from 'node:fs';
 
-const dataDir = path.join(__dirname, '..', 'data');
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true, mode: 0o755 });
+// DB_PATH permite usar una base aislada (por ejemplo ':memory:' en las pruebas).
+function resolveDbPath() {
+  if (process.env.DB_PATH) return process.env.DB_PATH;
+  const dataDir = path.join(__dirname, '..', 'data');
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true, mode: 0o755 });
+  }
+  return path.join(dataDir, 'crm.db');
 }
 
-const dbPath = path.join(dataDir, 'crm.db');
-
-export const db = new Database(dbPath);
+export const db = new Database(resolveDbPath());
 db.pragma('journal_mode = WAL');
 
 export function initSchema() {
