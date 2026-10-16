@@ -31,7 +31,6 @@ reports-dc/
 .scannerwork/
 *.jar
 auditoria-dependencias.txt
-sonar-project.properties
 
 # Cobertura y pruebas
 coverage/
