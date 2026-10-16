@@ -37,8 +37,7 @@ export default function LoginPage() {
       {/* Panel de marca */}
       <div className="relative hidden flex-col justify-between overflow-hidden bg-uvg-deep p-12 text-white lg:flex">
         <div
-          className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full opacity-25 blur-3xl"
-          style={{ background: 'radial-gradient(circle,#a8f0c8,transparent 70%)' }}
+          className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-[radial-gradient(circle,#a8f0c8,transparent_70%)] opacity-25 blur-3xl"
         />
         <Logo className="h-8 w-auto" />
         <div className="relative max-w-md">

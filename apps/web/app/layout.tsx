@@ -6,6 +6,9 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'sw
 const display = Bricolage_Grotesque({ subsets: ['latin'], variable: '--font-display', display: 'swap' });
 const mono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono', display: 'swap' });
 
+// La CSP usa un nonce por peticion, por eso ninguna pagina puede prerenderizarse estaticamente.
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Secure CRM — Laboratorio OWASP · UVG',
   description:
