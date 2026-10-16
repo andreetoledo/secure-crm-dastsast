@@ -12,11 +12,15 @@
     "start": "concurrently -n API,WEB -c green,cyan \"pnpm --filter @secure-crm/api start\" \"pnpm --filter @secure-crm/web start\"",
     "docker:up": "docker compose up --build",
     "docker:down": "docker compose down -v",
-    "test": "node --test test/*.test.mjs",
-    "test:coverage": "node --test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=coverage/lcov.info test/*.test.mjs && node scripts/normalize-lcov.mjs"
+    "test": "node --import tsx --test test/",
+    "test:coverage": "c8 --reporter=lcov --reports-dir=coverage --include=apps/** node --import tsx --test test/ && node scripts/normalize-lcov.mjs",
+    "audit:prod": "pnpm audit --prod"
   },
   "devDependencies": {
-    "concurrently": "^9.1.0"
+    "concurrently": "^9.1.0",
+    "supertest": "^7.1.4",
+    "tsx": "^4.19.1",
+    "c8": "^10.1.3"
   },
   "packageManager": "pnpm@10.12.1",
   "engines": {
@@ -28,15 +32,15 @@
       "esbuild"
     ],
     "overrides": {
-      "lodash": "^4.17.21",
+      "lodash": "^4.18.0",
       "jsonwebtoken": "^9.0.2",
-      "qs": ">=6.13.0",
-      "proxy-addr": ">=2.0.8",
-      "next": "^14.2.24",
+      "qs": "^6.16.0",
+      "proxy-addr": "^2.0.8",
+      "next": "^15.5.24",
       "shell-quote": "^1.8.3",
-      "postcss": "^8.4.49",
+      "postcss": "^8.5.23",
       "braces": "^3.0.3",
-      "source-map-js": "^1.2.1",
+      "source-map-js": "^1.2.2",
       "postcss-selector-parser": "^6.1.2"
     }
   }
