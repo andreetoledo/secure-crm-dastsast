@@ -12,10 +12,10 @@ ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_SHOW_SOLUTIONS=$NEXT_PUBLIC_SHOW_SOLUTIONS
 ENV NEXT_TELEMETRY_DISABLED=1
 
-COPY pnpm-workspace.yaml package.json ./
+COPY pnpm-workspace.yaml package.json pnpm-lock.yaml .npmrc ./
 COPY packages/shared/package.json packages/shared/
 COPY apps/web/package.json apps/web/
-RUN pnpm install --filter @secure-crm/shared --filter @secure-crm/web
+RUN pnpm install --frozen-lockfile --filter @secure-crm/shared --filter @secure-crm/web
 
 COPY tsconfig.base.json ./
 COPY packages/shared packages/shared

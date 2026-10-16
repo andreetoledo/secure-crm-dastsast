@@ -6,10 +6,10 @@ RUN corepack enable
 WORKDIR /app
 
 # Manifiestos primero (mejor cache)
-COPY pnpm-workspace.yaml package.json ./
+COPY pnpm-workspace.yaml package.json pnpm-lock.yaml .npmrc ./
 COPY packages/shared/package.json packages/shared/
 COPY apps/api/package.json apps/api/
-RUN pnpm install --filter @secure-crm/shared --filter @secure-crm/api
+RUN pnpm install --frozen-lockfile --filter @secure-crm/shared --filter @secure-crm/api
 
 # Código
 COPY tsconfig.base.json ./
