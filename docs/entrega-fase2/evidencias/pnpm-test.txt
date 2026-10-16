@@ -1,0 +1,361 @@
+
+> secure-crm@1.0.0 test C:\Users\villa\AppData\Local\Temp\claude\e--18-SAST-Proyecto-Software\a46c38c9-e738-445d-af13-b4f5e868c97f\scratchpad\scanrepo
+> node --import tsx --test test/
+
+TAP version 13
+# Subtest: CWE-347 / \#15: tokens JWT falsificados son rechazados
+    # Subtest: Token con alg "none" (sin firma) haciendose pasar por admin -> 401
+    ok 1 - Token con alg "none" (sin firma) haciendose pasar por admin -> 401
+      ---
+      duration_ms: 31.2893
+      ...
+    # Subtest: Token firmado con un secreto adivinado ("[REDACTADO]") -> 401
+    ok 2 - Token firmado con un secreto adivinado ("[REDACTADO]") -> 401
+      ---
+      duration_ms: 18.9383
+      ...
+    # Subtest: Viewer edita su payload a role=admin manteniendo la firma original -> 401
+    ok 3 - Viewer edita su payload a role=admin manteniendo la firma original -> 401
+      ---
+      duration_ms: 129.5487
+      ...
+    # Subtest: Algoritmo distinto de HS256 (HS512 con el secreto correcto) -> 401
+    ok 4 - Algoritmo distinto de HS256 (HS512 con el secreto correcto) -> 401
+      ---
+      duration_ms: 5.6104
+      ...
+    1..4
+ok 1 - CWE-347 / \#15: tokens JWT falsificados son rechazados
+  ---
+  duration_ms: 187.0474
+  ...
+# Subtest: CWE-862: un viewer no puede ejecutar acciones de admin/agent
+    # Subtest: Listar usuarios -> 403
+    ok 1 - Listar usuarios -> 403
+      ---
+      duration_ms: 4.1514
+      ...
+    # Subtest: Escalar privilegios creando una cuenta admin -> 403
+    ok 2 - Escalar privilegios creando una cuenta admin -> 403
+      ---
+      duration_ms: 4.0225
+      ...
+    # Subtest: Cambiar su propio rol a admin -> 403
+    ok 3 - Cambiar su propio rol a admin -> 403
+      ---
+      duration_ms: 5.3509
+      ...
+    # Subtest: Editar y borrar tickets -> 403
+    ok 4 - Editar y borrar tickets -> 403
+      ---
+      duration_ms: 8.1953
+      ...
+    1..4
+ok 2 - CWE-862: un viewer no puede ejecutar acciones de admin/agent
+  ---
+  duration_ms: 104.0445
+  ...
+# Subtest: CWE-256: ni siquiera un admin recibe hashes de contraseñas
+ok 3 - CWE-256: ni siquiera un admin recibe hashes de contraseñas
+  ---
+  duration_ms: 93.0006
+  ...
+# Subtest: CWE-1004: la cookie de sesion no es legible desde JavaScript
+ok 4 - CWE-1004: la cookie de sesion no es legible desde JavaScript
+  ---
+  duration_ms: 89.2016
+  ...
+# Subtest: Refactorizacion Clean Code y Calidad SonarQube (S3358, S4624, S7772, S7744)
+    # Subtest: Mitiga typescript:S7772: Importaciones usan el prefijo node: en apps/api/src/db.ts
+    ok 1 - Mitiga typescript:S7772: Importaciones usan el prefijo node: en apps/api/src/db.ts
+      ---
+      duration_ms: 1.8171
+      ...
+    # Subtest: Mitiga typescript:S4624: Sin template literals anidados en api.ts y tickets/page.tsx
+    ok 2 - Mitiga typescript:S4624: Sin template literals anidados en api.ts y tickets/page.tsx
+      ---
+      duration_ms: 0.3799
+      ...
+    # Subtest: Mitiga typescript:S3358: Sin operadores ternarios anidados en tickets/[id]/page.tsx
+    ok 3 - Mitiga typescript:S3358: Sin operadores ternarios anidados en tickets/[id]/page.tsx
+      ---
+      duration_ms: 0.1752
+      ...
+    1..3
+ok 5 - Refactorizacion Clean Code y Calidad SonarQube (S3358, S4624, S7772, S7744)
+  ---
+  duration_ms: 4.7272
+  ...
+# Subtest: CWE-942: un sitio malicioso no puede leer datos de la API con las cookies de la victima
+    # Subtest: Origin: https://evil.example no recibe Access-Control-Allow-Origin
+    ok 1 - Origin: https://evil.example no recibe Access-Control-Allow-Origin
+      ---
+      duration_ms: 7.4075
+      ...
+    # Subtest: El preflight desde un origen malicioso tampoco se autoriza
+    ok 2 - El preflight desde un origen malicioso tampoco se autoriza
+      ---
+      duration_ms: 4.1112
+      ...
+    # Subtest: El frontend legitimo (http://localhost:3000) si es autorizado
+    ok 3 - El frontend legitimo (http://localhost:3000) si es autorizado
+      ---
+      duration_ms: 4.4484
+      ...
+    1..3
+ok 6 - CWE-942: un sitio malicioso no puede leer datos de la API con las cookies de la victima
+  ---
+  duration_ms: 151.7221
+  ...
+# Error interno capturado: Unexpected end of JSON input
+# Subtest: CWE-209: un error provocado no revela stack trace ni rutas internas
+ok 7 - CWE-209: un error provocado no revela stack trace ni rutas internas
+  ---
+  duration_ms: 14.0629
+  ...
+# Subtest: Seguridad Criptografica de Contrase�as (CWE-327 / CWE-759)
+    # Subtest: Falla si se utiliza MD5 de 32 hex sin proteccion criptografica
+    ok 1 - Falla si se utiliza MD5 de 32 hex sin proteccion criptografica
+      ---
+      duration_ms: 0.9636
+      ...
+    # Subtest: Mitiga CWE-759: Genera salts aleatorios unicos para contrase�as identicas
+    ok 2 - Mitiga CWE-759: Genera salts aleatorios unicos para contrase�as identicas
+      ---
+      duration_ms: 252.3433
+      ...
+    # Subtest: Mitiga CWE-327: Emplea longitud y derivacion de clave robusta (no MD5)
+    ok 3 - Mitiga CWE-327: Emplea longitud y derivacion de clave robusta (no MD5)
+      ---
+      duration_ms: 132.0019
+      ...
+    # Subtest: Verificacion segura y proteccion contra contrase�as incorrectas
+    ok 4 - Verificacion segura y proteccion contra contrase�as incorrectas
+      ---
+      duration_ms: 263.4312
+      ...
+    1..4
+ok 8 - Seguridad Criptografica de Contrase�as (CWE-327 / CWE-759)
+  ---
+  duration_ms: 1075.1554
+  ...
+# Subtest: CSP con nonce por peticion en el middleware de Next (\#7)
+    # Subtest: La respuesta lleva Content-Security-Policy sin unsafe-inline ni unsafe-eval
+    ok 1 - La respuesta lleva Content-Security-Policy sin unsafe-inline ni unsafe-eval
+      ---
+      duration_ms: 1.1301
+      ...
+    # Subtest: Un atacante no puede reutilizar el nonce: cambia en cada peticion
+    ok 2 - Un atacante no puede reutilizar el nonce: cambia en cada peticion
+      ---
+      duration_ms: 0.3393
+      ...
+    # Subtest: Next recibe el mismo nonce para firmar sus propios <script>
+    ok 3 - Next recibe el mismo nonce para firmar sus propios <script>
+      ---
+      duration_ms: 0.2894
+      ...
+    1..3
+ok 9 - CSP con nonce por peticion en el middleware de Next (\#7)
+  ---
+  duration_ms: 10.829
+  ...
+# Subtest: \#16 lodash: inyeccion de codigo via claves de _.template imports (GHSA-r5fr-rjxr-66jc)
+ok 10 - \#16 lodash: inyeccion de codigo via claves de _.template imports (GHSA-r5fr-rjxr-66jc)
+  ---
+  duration_ms: 1.2687
+  ...
+# Subtest: \#16 lodash: prototype pollution con _.defaultsDeep (CVE-2019-10744)
+ok 11 - \#16 lodash: prototype pollution con _.defaultsDeep (CVE-2019-10744)
+  ---
+  duration_ms: 0.5843
+  ...
+# Subtest: \#17 qs: DoS con isBuffer controlado por el atacante (GHSA-4mjr-xmp4-gh2g)
+ok 12 - \#17 qs: DoS con isBuffer controlado por el atacante (GHSA-4mjr-xmp4-gh2g)
+  ---
+  duration_ms: 3.2072
+  ...
+# Subtest: \#17 qs: bypass de arrayLimit con a[]=1,2,3,4 (GHSA-x5fp-wj9c-mxmx)
+ok 13 - \#17 qs: bypass de arrayLimit con a[]=1,2,3,4 (GHSA-x5fp-wj9c-mxmx)
+  ---
+  duration_ms: 0.4503
+  ...
+# Subtest: \#13 proxy-addr: un cliente no puede falsificar su IP con X-Forwarded-For (GHSA-jqcg-44mw-7w3h)
+ok 14 - \#13 proxy-addr: un cliente no puede falsificar su IP con X-Forwarded-For (GHSA-jqcg-44mw-7w3h)
+  ---
+  duration_ms: 64.811
+  ...
+# Subtest: \#14 next: la version instalada y la del lockfile son >= 15.5.24
+ok 15 - \#14 next: la version instalada y la del lockfile son >= 15.5.24
+  ---
+  duration_ms: 1.7955
+  ...
+# Subtest: \#13-\#17: ninguna version vulnerable queda en pnpm-lock.yaml
+ok 16 - \#13-\#17: ninguna version vulnerable queda en pnpm-lock.yaml
+  ---
+  duration_ms: 0.9171
+  ...
+# Subtest: \#4-\#6: politicas de cadena de suministro de pnpm
+ok 17 - \#4-\#6: politicas de cadena de suministro de pnpm
+  ---
+  duration_ms: 1.1574
+  ...
+# Subtest: Seguridad en Contenedores Docker (CWE-250 / SonarQube docker:S6471)
+    # Subtest: Mitiga S6471 en API: apps/api/Dockerfile declara usuario no privilegiado
+    ok 1 - Mitiga S6471 en API: apps/api/Dockerfile declara usuario no privilegiado
+      ---
+      duration_ms: 1.6094
+      ...
+    # Subtest: Mitiga S6471 en Web: apps/web/Dockerfile declara usuario no privilegiado
+    ok 2 - Mitiga S6471 en Web: apps/web/Dockerfile declara usuario no privilegiado
+      ---
+      duration_ms: 0.3558
+      ...
+    # Subtest: Las imagenes instalan exactamente las versiones corregidas de pnpm-lock.yaml
+    ok 3 - Las imagenes instalan exactamente las versiones corregidas de pnpm-lock.yaml
+      ---
+      duration_ms: 4.5956
+      ...
+    # Subtest: Verifica que USER este posicionado antes de la instruccion CMD
+    ok 4 - Verifica que USER este posicionado antes de la instruccion CMD
+      ---
+      duration_ms: 0.3285
+      ...
+    1..4
+ok 18 - Seguridad en Contenedores Docker (CWE-250 / SonarQube docker:S6471)
+  ---
+  duration_ms: 22.5473
+  ...
+# Subtest: API: las respuestas HTTP reales llevan las cabeceras de seguridad (\#3, \#7-\#10, \#12)
+    # Subtest: Fingerprinting (\#3): la respuesta no revela X-Powered-By: Express
+    ok 1 - Fingerprinting (\#3): la respuesta no revela X-Powered-By: Express
+      ---
+      duration_ms: 0.7213
+      ...
+    # Subtest: Clickjacking (\#8): un sitio externo no puede embeber la API en un iframe
+    ok 2 - Clickjacking (\#8): un sitio externo no puede embeber la API en un iframe
+      ---
+      duration_ms: 0.2339
+      ...
+    # Subtest: MIME sniffing (\#9): nosniff presente
+    ok 3 - MIME sniffing (\#9): nosniff presente
+      ---
+      duration_ms: 0.1133
+      ...
+    # Subtest: Aislamiento (\#10) y Permissions-Policy (\#12)
+    ok 4 - Aislamiento (\#10) y Permissions-Policy (\#12)
+      ---
+      duration_ms: 0.116
+      ...
+    # Subtest: CSP (\#7): la API no permite cargar ningun recurso
+    ok 5 - CSP (\#7): la API no permite cargar ningun recurso
+      ---
+      duration_ms: 0.1
+      ...
+    1..5
+ok 19 - API: las respuestas HTTP reales llevan las cabeceras de seguridad (\#3, \#7-\#10, \#12)
+  ---
+  duration_ms: 35.1012
+  ...
+# Subtest: Web: la CSP de produccion bloquea scripts inyectados (\#7 y alertas medias de ZAP Fase 2)
+    # Subtest: Un <script> o un onerror= inyectado sin nonce no se ejecuta: no hay unsafe-inline
+    ok 1 - Un <script> o un onerror= inyectado sin nonce no se ejecuta: no hay unsafe-inline
+      ---
+      duration_ms: 0.1728
+      ...
+    # Subtest: eval() de una cadena inyectada queda bloqueado: no hay unsafe-eval
+    ok 2 - eval() de una cadena inyectada queda bloqueado: no hay unsafe-eval
+      ---
+      duration_ms: 0.1062
+      ...
+    # Subtest: Un <style> inyectado sin nonce no se aplica
+    ok 3 - Un <style> inyectado sin nonce no se aplica
+      ---
+      duration_ms: 0.1176
+      ...
+    # Subtest: Un formulario inyectado no puede enviar datos a otro dominio (form-action)
+    ok 4 - Un formulario inyectado no puede enviar datos a otro dominio (form-action)
+      ---
+      duration_ms: 0.1688
+      ...
+    # Subtest: img-src no acepta cualquier dominio https: (comodin)
+    ok 5 - img-src no acepta cualquier dominio https: (comodin)
+      ---
+      duration_ms: 0.1084
+      ...
+    # Subtest: Cada peticion recibe un nonce distinto
+    ok 6 - Cada peticion recibe un nonce distinto
+      ---
+      duration_ms: 0.1851
+      ...
+    1..6
+ok 20 - Web: la CSP de produccion bloquea scripts inyectados (\#7 y alertas medias de ZAP Fase 2)
+  ---
+  duration_ms: 1.8518
+  ...
+# Subtest: Web: next.config aplica las cabeceras estaticas a todas las rutas (\#3, \#8-\#10, \#12)
+ok 21 - Web: next.config aplica las cabeceras estaticas a todas las rutas (\#3, \#8-\#10, \#12)
+  ---
+  duration_ms: 0.2581
+  ...
+# Subtest: CWE-89: bypass de login con inyeccion SQL
+    # Subtest: username=admin' -- password=cualquiera -> 401 sin token
+    ok 1 - username=admin' -- password=cualquiera -> 401 sin token
+      ---
+      duration_ms: 47.1289
+      ...
+    # Subtest: username=' OR '1'='1' -- password=cualquiera -> 401 sin token
+    ok 2 - username=' OR '1'='1' -- password=cualquiera -> 401 sin token
+      ---
+      duration_ms: 7.383
+      ...
+    # Subtest: username=admin password=' OR '1'='1 -> 401 sin token
+    ok 3 - username=admin password=' OR '1'='1 -> 401 sin token
+      ---
+      duration_ms: 97.8935
+      ...
+    # Subtest: UNION SELECT que inyecta una fila admin con un hash conocido por el atacante -> 401
+    ok 4 - UNION SELECT que inyecta una fila admin con un hash conocido por el atacante -> 401
+      ---
+      duration_ms: 91.299
+      ...
+    # Subtest: Una comilla suelta no rompe la consulta (401, no 500)
+    ok 5 - Una comilla suelta no rompe la consulta (401, no 500)
+      ---
+      duration_ms: 4.9307
+      ...
+    1..5
+ok 22 - CWE-89: bypass de login con inyeccion SQL
+  ---
+  duration_ms: 250.7541
+  ...
+# Subtest: CWE-89: inyeccion en la busqueda de tickets
+    # Subtest: q=' OR '1'='1 no devuelve todos los tickets
+    ok 1 - q=' OR '1'='1 no devuelve todos los tickets
+      ---
+      duration_ms: 7.8219
+      ...
+    # Subtest: UNION SELECT no filtra la tabla de usuarios
+    ok 2 - UNION SELECT no filtra la tabla de usuarios
+      ---
+      duration_ms: 5.4022
+      ...
+    # Subtest: La tabla users sigue existiendo despues de un payload destructivo
+    ok 3 - La tabla users sigue existiendo despues de un payload destructivo
+      ---
+      duration_ms: 98.1659
+      ...
+    1..3
+ok 23 - CWE-89: inyeccion en la busqueda de tickets
+  ---
+  duration_ms: 209.4666
+  ...
+1..23
+# tests 67
+# suites 0
+# pass 67
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4109.022

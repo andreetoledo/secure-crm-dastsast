@@ -1,0 +1,41 @@
+### curl -sI http://localhost:3000/login
+HTTP/1.1 200 OK
+X-Frame-Options: DENY
+X-Content-Type-Options: nosniff
+Referrer-Policy: strict-origin-when-cross-origin
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Resource-Policy: same-origin
+Permissions-Policy: camera=(), microphone=(), geolocation=()
+content-security-policy: default-src 'self'; script-src 'self' 'nonce-MTY0MzEzMjktMDJiMC00YzUwLWFhNTktMWM4Y2YwMGZjODlm' 'strict-dynamic'; style-src 'self' 'nonce-MTY0MzEzMjktMDJiMC00YzUwLWFhNTktMWM4Y2YwMGZjODlm'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' http://localhost:4000; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+Vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding
+link: </_next/static/media/9d5a263311222317-s.p.woff2>; rel=preload; as="font"; crossorigin=""; nonce="MTY0MzEzMjktMDJiMC00YzUwLWFhNTktMWM4Y2YwMGZjODlm"; type="font/woff2", </_next/static/media/bb3ef058b751a6ad-s.p.woff2>; rel=preload; as="font"; crossorigin=""; nonce="MTY0MzEzMjktMDJiMC00YzUwLWFhNTktMWM4Y2YwMGZjODlm"; type="font/woff2", </_next/static/media/e4af272ccee01ff0-s.p.woff2>; rel=preload; as="font"; crossorigin=""; nonce="MTY0MzEzMjktMDJiMC00YzUwLWFhNTktMWM4Y2YwMGZjODlm"; type="font/woff2", </brand/logo.svg>; rel=preload; as="image", </brand/uvg.png>; rel=preload; as="image"
+Cache-Control: private, no-cache, no-store, max-age=0, must-revalidate
+Content-Type: text/html; charset=utf-8
+Date: Fri, 16 Oct 2026 19:46:31 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+### curl -sI http://localhost:4000/api/health
+HTTP/1.1 200 OK
+Content-Security-Policy: default-src 'none';base-uri 'none';form-action 'none';frame-ancestors 'none'
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Resource-Policy: same-origin
+Origin-Agent-Cluster: ?1
+Referrer-Policy: strict-origin-when-cross-origin
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+X-Content-Type-Options: nosniff
+X-DNS-Prefetch-Control: off
+X-Download-Options: noopen
+X-Frame-Options: DENY
+X-Permitted-Cross-Domain-Policies: none
+X-XSS-Protection: 0
+Permissions-Policy: camera=(), microphone=(), geolocation=()
+Vary: Origin
+Access-Control-Allow-Credentials: true
+Content-Type: application/json; charset=utf-8
+Content-Length: 42
+ETag: W/"2a-kB7QF4J6YMjH4xKBag6YEs8mUS4"
+Date: Fri, 16 Oct 2026 19:46:32 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
