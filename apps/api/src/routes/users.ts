@@ -9,8 +9,7 @@ usersRouter.use(requireRole('admin'));
 
 // GET /api/users
 // Broken Access Control: NO se valida que el usuario sea admin (A01 / CWE-862).
-// Además filtra el password_hash de cada usuario (A04 / CWE-256: exposición de
-// información sensible). Un 'viewer' puede listar todos los hashes.
+// El password_hash nunca se incluye en la respuesta (mitiga CWE-256).
 usersRouter.get('/', (_req, res) => {
   const rows = db.prepare('SELECT * FROM users ORDER BY id').all() as any[];
   res.json(
@@ -20,13 +19,12 @@ usersRouter.get('/', (_req, res) => {
       email: r.email,
       fullName: r.full_name,
       role: r.role,
-      passwordHash: r.password_hash, // fuga intencional
       createdAt: r.created_at,
     }))
   );
 });
 
-// GET /api/users/:id  (IDOR + fuga de hash)
+// GET /api/users/:id  (solo admin; sin password_hash)
 usersRouter.get('/:id', (req, res) => {
   const r = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id) as any;
   if (!r) return res.status(404).json({ error: 'Usuario no encontrado' });
@@ -36,7 +34,6 @@ usersRouter.get('/:id', (req, res) => {
     email: r.email,
     fullName: r.full_name,
     role: r.role,
-    passwordHash: r.password_hash,
     createdAt: r.created_at,
   });
 });
